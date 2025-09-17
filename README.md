@@ -29,7 +29,7 @@ Real User Monitoring (RUM): Core Web Vitals (LCP, FID/INP, CLS, TTFB)
 
 User Feedback: Questionnaire
 
-🛠️ Tech Stack
+Tech Stack
 
 Frontend & Backend: Next.js (React + Node.js)
 
