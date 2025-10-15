@@ -29,21 +29,7 @@ Performance testing tools: Lighthouse, WebPageTest, load testing
 Real User Monitoring (RUM): Core Web Vitals (LCP, FID/INP, CLS, TTFB)
 
 User Feedback: Questionnaire
-
-Tech Stack
-
-Frontend & Backend: Next.js (React + Node.js)
-
-Database: MongoDB (Mongoose)
-
-Authentication: NextAuth / JWT
-
-Performance Monitoring: web-vitals, Lighthouse, WebPageTest
-
-
-
-
-
+I ju
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
