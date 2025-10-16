@@ -35,5 +35,8 @@
     "eslint-config-next": "15.5.4",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14"
+  },
+  "optionalDependencies": {
+    "lightningcss-linux-x64-gnu": "1.30.1"
   }
 }
