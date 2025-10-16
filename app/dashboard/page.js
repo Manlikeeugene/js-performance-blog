@@ -9,8 +9,9 @@ async function fetchUserPosts(userId) {
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
 
- 
-  const res = await fetch(`/api/posts?userId=${userId}`, { 
+const baseUrl = process.env.NEXTAUTH_URL
+  
+  const res = await fetch(`${baseUrl}/api/posts?userId=${userId}`, { 
     cache: 'no-store',
     headers: { 
       'Content-Type': 'application/json',

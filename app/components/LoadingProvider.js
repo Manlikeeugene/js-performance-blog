@@ -59,8 +59,8 @@
 
 'use client';
 
-import { useState, useEffect, createContext, useContext } from 'react';  // Add useContext if not there
-import { usePathname, useRouter } from 'next/navigation';  // Add useRouter
+import { useState, useEffect, useContext, createContext } from 'react';
+import { usePathname } from 'next/navigation';
 import LoadingSpinner from './LoadingSpinner';
 
 export const LoadingContext = createContext();
@@ -72,8 +72,8 @@ export function useLoading() {
 export default function LoadingProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();  // New: For route events
 
+  // Handle body overflow when loading
   useEffect(() => {
     if (isLoading) {
       document.body.style.overflow = 'hidden';
@@ -82,40 +82,40 @@ export default function LoadingProvider({ children }) {
     }
   }, [isLoading]);
 
+  // Handle route changes via pathname
   useEffect(() => {
-    // New: Listen to route change events instead of just pathname
-    const handleRouteChangeStart = () => {
-      setIsLoading(true);
-    };
+    let isMounted = true;
+    const minDuration = 800; // Minimum loading time for UX
+    const startTime = Date.now();
 
-    const handleRouteChangeComplete = () => {
-      const minDuration = 800;
-      const startTime = Date.now();  // Track start time
-      const handleLoad = () => {
-        const elapsed = Date.now() - startTime;
-        const delay = Math.max(0, minDuration - elapsed);
-        setTimeout(() => setIsLoading(false), delay);
-      };
-
-      if (document.readyState === 'complete') {
-        handleLoad();
-      } else {
-        window.addEventListener('load', handleLoad);
-        return () => window.removeEventListener('load', handleLoad);
+    // Defer setIsLoading(true) to avoid synchronous setState
+    const timer = setTimeout(() => {
+      if (isMounted) {
+        setIsLoading(true);
       }
-    };
 
-    // Subscribe to events
-    router.events.on('routeChangeStart', handleRouteChangeStart);
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-    router.events.on('routeChangeError', () => setIsLoading(false));  // Handle errors
+      // Ensure minimum duration before turning off loading
+      const elapsed = Date.now() - startTime;
+      const remaining = minDuration - elapsed;
+      if (remaining <= 0) {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      } else {
+        setTimeout(() => {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }, remaining);
+      }
+    }, 0); // Run immediately but asynchronously
 
+    // Cleanup on unmount or pathname change
     return () => {
-      router.events.off('routeChangeStart', handleRouteChangeStart);
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-      router.events.off('routeChangeError', () => setIsLoading(false));
+      isMounted = false;
+      clearTimeout(timer);
     };
-  }, [router]);  // Depend on router instead of pathname
+  }, [pathname]);
 
   const value = { setIsLoading };
 

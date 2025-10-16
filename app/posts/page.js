@@ -1,3 +1,4 @@
+
 import { cookies } from 'next/headers';
 import ClientPostsList from '../components/ClientPostsList';
 import Navbar from '../components/Navbar';
@@ -21,13 +22,14 @@ const dummyPosts = [
 ];
 
 async function fetchPosts() {
-  
+  // Use full URL to avoid parsing issues in server components
+const baseUrl = process.env.NEXTAUTH_URL
   
   // Await cookies() for async resolution in Next.js 15
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
   
-  const res = await fetch(`/api/posts`, { 
+  const res = await fetch(`${baseUrl}/api/posts`, { 
     cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',

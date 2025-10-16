@@ -6,8 +6,9 @@ import Navbar from '../../../components/Navbar';
 import Footer from '../../../components/Footer';
 
 async function fetchPost(id, cookieHeader) {
-    
-  const res = await fetch(`/api/posts/${id}`, { 
+  const baseUrl = process.env.NEXTAUTH_URL
+  
+  const res = await fetch(`${baseUrl}/api/posts/${id}`, { 
     cache: 'no-store',
     headers: { 
       'Content-Type': 'application/json',
