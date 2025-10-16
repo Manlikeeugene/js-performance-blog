@@ -1,14 +1,15 @@
+
 // 'use client';
 
 // import React, { useState, useEffect } from 'react';
 // import { useRouter } from 'next/navigation';
 // import { useSession, signOut } from 'next-auth/react';
-// import Image from 'next/image'; // For image optimization
-// import { 
-//   Zap, Menu, X, Home, FileText, PlusCircle, Settings, User, 
-//   TrendingUp, Eye, ThumbsUp, MessageCircle, BarChart3, 
+// import Image from 'next/image';
+// import {
+//   Zap, Menu, X, Home, FileText, PlusCircle, Settings, User,
+//   TrendingUp, Eye, ThumbsUp, MessageCircle, BarChart3,
 //   Clock, Edit, Trash2, Search, Filter, Bell, LogOut,
-//   Activity, Users, BookOpen, Calendar, Upload, Image as ImageIcon // Alias Image to ImageIcon
+//   Activity, Users, BookOpen, Calendar, Upload, Image as ImageIcon
 // } from 'lucide-react';
 // import Link from 'next/link';
 // import PostCard from './PostCard';
@@ -24,7 +25,7 @@
 
 // const recentActivity = [];
 
-// export default function Dashboard({ initialPosts = [], userId }) {
+// export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
 //   const router = useRouter();
 //   const { data: session, status } = useSession();
 //   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -35,7 +36,7 @@
 //   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 //   const [postToDelete, setPostToDelete] = useState(null);
 //   const [userPosts, setUserPosts] = useState(initialPosts);
-//   const [loadingPosts, setLoadingPosts] = useState(false);
+//   const [loadingPosts, setLoadingPosts] = useState(true);
 //   const [submitting, setSubmitting] = useState(false);
 
 //   // Create post form states
@@ -54,32 +55,43 @@
 //   const [creating, setCreating] = useState(false);
 
 //   useEffect(() => {
-//     if (status === 'loading') return;
-//     if (!session) {
-//       router.push('/login');
-//     }
-//     setUserPosts(initialPosts);
-//   }, [session, status, router, initialPosts]);
+//     if (!userId || !baseUrl) return;
 
-//   const fetchUserPosts = async () => {
-//     if (!userId) return;
-//     setLoadingPosts(true);
-//     try {
-//       const res = await fetch(`/api/posts?userId=${userId}`);
-//       if (res.ok) {
-//         const posts = await res.json();
-//         setUserPosts(posts);
-//       } else {
-//         console.error('Failed to fetch posts');
+//     async function fetchUserPosts() {
+//       setLoadingPosts(true);
+//       try {
+//         const res = await fetch(`/api/posts?userId=${userId}`, {
+//           cache: 'no-store',
+//           headers: {
+//             'Content-Type': 'application/json',
+//           },
+//         });
+
+//         if (!res.ok) {
+//           console.error('Posts fetch failed:', res.status, await res.text());
+//           throw new Error('Failed to fetch user posts');
+//         }
+
+//         const data = await res.json();
+//         // Format date if from DB
+//         const formattedPosts = data.map(post => ({
+//           ...post,
+//           date: post.createdAt ? new Date(post.createdAt).toISOString().split('T')[0] : post.date
+//         }));
+
+//         setUserPosts(formattedPosts.length > 0 ? formattedPosts : initialPosts);
+//       } catch (error) {
+//         console.error('Error fetching posts:', error);
+//         setUserPosts(initialPosts); // Fallback to empty array
+//       } finally {
+//         setLoadingPosts(false);
 //       }
-//     } catch (error) {
-//       console.error('Error fetching posts:', error);
-//     } finally {
-//       setLoadingPosts(false);
 //     }
-//   };
 
-//   const filteredPosts = userPosts.filter(post => 
+//     fetchUserPosts();
+//   }, [userId, baseUrl, initialPosts]);
+
+//   const filteredPosts = userPosts.filter(post =>
 //     post.title.toLowerCase().includes(searchQuery.toLowerCase())
 //   );
 
@@ -139,7 +151,7 @@
 //     }
 
 //     setUploadingImage(true);
-    
+
 //     try {
 //       // Create FormData for image upload
 //       const formData = new FormData();
@@ -152,9 +164,9 @@
 
 //       if (response.ok) {
 //         const data = await response.json();
-//         setNewPost(prev => ({...prev, image: data.url})); // secure_url
+//         setNewPost(prev => ({...prev, image: data.url}));
 //         setImagePreview(data.url);
-//         console.log('Uploaded:', data.public_id); // Optional: Log public_id for ref
+//         console.log('Uploaded:', data.public_id);
 //       } else {
 //         alert('Failed to upload image');
 //       }
@@ -176,15 +188,15 @@
 //         body: JSON.stringify({
 //           ...newPost,
 //           tags: newPost.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-//           author: userId, // Use ID, not name
+//           author: userId,
 //           authorBio: newPost.authorBio || 'Content Creator'
 //         })
 //       });
-      
-//       console.log('Create response status:', response.status); // Debug log
+
+//       console.log('Create response status:', response.status);
 //       const responseData = await response.json();
-//       console.log('Create response data:', responseData); // Debug: Check for {post, message}
-      
+//       console.log('Create response data:', responseData);
+
 //       if (response.ok && responseData.post) {
 //         setNewPost({
 //           title: '',
@@ -199,7 +211,7 @@
 //         setImagePreview('');
 //         await fetchUserPosts();
 //         setActiveTab('posts');
-//         alert('Post created successfully!'); // Optional success feedback
+//         alert('Post created successfully!');
 //       } else {
 //         console.error('Failed to create post:', responseData.error || 'Unknown error');
 //         alert(`Failed to create post: ${responseData.error || 'Server error'}`);
@@ -216,8 +228,6 @@
 //     return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
 //   }
 
-//   if (!session) return null;
-
 //   const handleDeleteClick = (post) => {
 //     setPostToDelete(post);
 //     setShowDeleteDialog(true);
@@ -225,7 +235,7 @@
 
 //   return (
 //     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white pt-16 sm:pt-20">
-//       {/* Sidebar - Adjusted to start below navbar */}
+//       {/* Sidebar */}
 //       <aside className={`fixed top-16 sm:top-20 bottom-0 left-0 z-40 w-64 bg-slate-900 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out border-r border-slate-700`}>
 //         <div className="flex items-center justify-between p-4 border-b border-slate-700">
 //           <h2 className="text-xl font-bold">Dashboard</h2>
@@ -263,12 +273,11 @@
 //         <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
 //       )}
 
-//       {/* Main Content - Adjusted padding for navbar and sidebar */}
+//       {/* Main Content */}
 //       <main className="lg:ml-64 p-4 sm:p-6 min-h-screen">
 //         {/* Header with Menu Button and Title */}
 //         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
 //           <div className="flex items-center gap-3">
-//             {/* Mobile Menu Button - Now inside main content */}
 //             <button
 //               onClick={() => setSidebarOpen(true)}
 //               className="lg:hidden p-2 bg-slate-800/50 rounded-lg border border-slate-700"
@@ -277,10 +286,9 @@
 //             </button>
 //             <h1 className="text-2xl font-bold">Dashboard</h1>
 //           </div>
-//           {/* User Greeting */}
 //           <div className="flex items-center gap-2 text-sm text-slate-400">
 //             <User className="w-4 h-4" />
-//             <span className="hidden sm:inline">Welcome back,</span> {session.user.name || session.user.email}
+//             <span className="hidden sm:inline">Welcome back,</span> {session?.user?.name || session?.user?.email}
 //           </div>
 //         </div>
 
@@ -467,13 +475,10 @@
 //           <PlusCircle className="w-6 h-6 text-emerald-400" />
 //           Create New Post
 //         </h3>
-        
+
 //         <form onSubmit={onCreate} className="space-y-6">
-//           {/* Title */}
 //           <div>
-//             <label className="block text-sm font-medium text-slate-300 mb-2">
-//               Post Title *
-//             </label>
+//             <label className="block text-sm font-medium text-slate-300 mb-2">Post Title *</label>
 //             <input
 //               type="text"
 //               required
@@ -484,11 +489,8 @@
 //             />
 //           </div>
 
-//           {/* Excerpt */}
 //           <div>
-//             <label className="block text-sm font-medium text-slate-300 mb-2">
-//               Excerpt *
-//             </label>
+//             <label className="block text-sm font-medium text-slate-300 mb-2">Excerpt *</label>
 //             <textarea
 //               required
 //               value={newPost.excerpt}
@@ -499,12 +501,9 @@
 //             />
 //           </div>
 
-//           {/* Author Bio and Read Time Row */}
 //           <div className="grid md:grid-cols-2 gap-6">
 //             <div>
-//               <label className="block text-sm font-medium text-slate-300 mb-2">
-//                 Author Bio
-//               </label>
+//               <label className="block text-sm font-medium text-slate-300 mb-2">Author Bio</label>
 //               <input
 //                 type="text"
 //                 value={newPost.authorBio}
@@ -515,9 +514,7 @@
 //             </div>
 
 //             <div>
-//               <label className="block text-sm font-medium text-slate-300 mb-2">
-//                 Read Time
-//               </label>
+//               <label className="block text-sm font-medium text-slate-300 mb-2">Read Time</label>
 //               <input
 //                 type="text"
 //                 value={newPost.readTime}
@@ -528,11 +525,8 @@
 //             </div>
 //           </div>
 
-//           {/* Content */}
 //           <div>
-//             <label className="block text-sm font-medium text-slate-300 mb-2">
-//               Content * (Markdown supported)
-//             </label>
+//             <label className="block text-sm font-medium text-slate-300 mb-2">Content * (Markdown supported)</label>
 //             <textarea
 //               required
 //               value={newPost.content}
@@ -544,18 +538,13 @@
 //             <p className="text-xs text-slate-400 mt-2">Supports Markdown formatting including headers, lists, code blocks, and more</p>
 //           </div>
 
-//           {/* Image Upload */}
 //           <div>
-//             <label className="block text-sm font-medium text-slate-300 mb-2">
-//               Featured Image
-//             </label>
+//             <label className="block text-sm font-medium text-slate-300 mb-2">Featured Image</label>
 //             <div className="space-y-4">
 //               <div className="flex items-center gap-4">
 //                 <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 border-2 border-dashed border-slate-700 rounded-lg hover:border-emerald-500 transition cursor-pointer">
-//                   <ImageIcon className="w-5 h-5 text-slate-400" /> {/* Changed from Image to ImageIcon */}
-//                   <span className="text-slate-400">
-//                     {uploadingImage ? 'Uploading...' : 'Upload Image'}
-//                   </span>
+//                   <ImageIcon className="w-5 h-5 text-slate-400" />
+//                   <span className="text-slate-400">{uploadingImage ? 'Uploading...' : 'Upload Image'}</span>
 //                   <input
 //                     type="file"
 //                     accept="image/*"
@@ -565,13 +554,13 @@
 //                   />
 //                 </label>
 //               </div>
-              
+
 //               {imagePreview && (
 //                 <div className="relative rounded-lg overflow-hidden border border-slate-700">
 //                   <div className="relative w-full h-48">
-//                     <Image 
-//                       src={imagePreview} 
-//                       alt="Preview" 
+//                     <Image
+//                       src={imagePreview}
+//                       alt="Preview"
 //                       fill
 //                       className="object-cover"
 //                     />
@@ -592,12 +581,9 @@
 //             </div>
 //           </div>
 
-//           {/* Category and Tags */}
 //           <div className="grid md:grid-cols-2 gap-6">
 //             <div>
-//               <label className="block text-sm font-medium text-slate-300 mb-2">
-//                 Category *
-//               </label>
+//               <label className="block text-sm font-medium text-slate-300 mb-2">Category *</label>
 //               <select
 //                 required
 //                 value={newPost.category}
@@ -614,9 +600,7 @@
 //             </div>
 
 //             <div>
-//               <label className="block text-sm font-medium text-slate-300 mb-2">
-//                 Tags
-//               </label>
+//               <label className="block text-sm font-medium text-slate-300 mb-2">Tags</label>
 //               <input
 //                 type="text"
 //                 value={newPost.tags}
@@ -628,7 +612,6 @@
 //             </div>
 //           </div>
 
-//           {/* Buttons */}
 //           <div className="flex gap-4 pt-4">
 //             <button
 //               type="submit"
@@ -697,9 +680,6 @@
 
 
 
-
-
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -726,9 +706,13 @@ const stats = [
 
 const recentActivity = [];
 
-export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
+export default function Dashboard({ initialPosts = [], baseUrl }) {
   const router = useRouter();
   const { data: session, status } = useSession();
+
+  // Compute userId early (before hooks)
+  const currentUserId = session?.user?.id;
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
@@ -755,13 +739,14 @@ export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [creating, setCreating] = useState(false);
 
+  // All hooks now called unconditionally
   useEffect(() => {
-    if (!userId || !baseUrl) return;
+    if (!currentUserId || !baseUrl) return;  // Guard: Skip if no session
 
     async function fetchUserPosts() {
       setLoadingPosts(true);
       try {
-        const res = await fetch(`/api/posts?userId=${userId}`, {
+        const res = await fetch(`/api/posts?userId=${currentUserId}`, {
           cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
@@ -790,7 +775,17 @@ export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
     }
 
     fetchUserPosts();
-  }, [userId, baseUrl, initialPosts]);
+  }, [currentUserId, baseUrl, initialPosts]);
+
+  // Now safe to early return after all hooks
+  if (status === 'loading') {
+    return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
+  }
+
+  if (!session?.user) {
+    router.push('/auth/login');
+    return null;
+  }
 
   const filteredPosts = userPosts.filter(post =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -830,6 +825,37 @@ export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
       setPostToDelete(null);
     }
   };
+
+  // Define fetchUserPosts as a separate function for reuse (e.g., after delete/create)
+  async function fetchUserPosts() {
+    setLoadingPosts(true);
+    try {
+      const res = await fetch(`/api/posts?userId=${currentUserId}`, {
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        console.error('Posts fetch failed:', res.status, await res.text());
+        throw new Error('Failed to fetch user posts');
+      }
+
+      const data = await res.json();
+      const formattedPosts = data.map(post => ({
+        ...post,
+        date: post.createdAt ? new Date(post.createdAt).toISOString().split('T')[0] : post.date
+      }));
+
+      setUserPosts(formattedPosts.length > 0 ? formattedPosts : initialPosts);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      setUserPosts(initialPosts);
+    } finally {
+      setLoadingPosts(false);
+    }
+  }
 
   const handleEditPost = (postId) => {
     router.push(`/posts/${postId}/edit`);
@@ -889,7 +915,7 @@ export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
         body: JSON.stringify({
           ...newPost,
           tags: newPost.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-          author: userId,
+          author: currentUserId,  // Use currentUserId
           authorBio: newPost.authorBio || 'Content Creator'
         })
       });
@@ -910,7 +936,7 @@ export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
           image: ''
         });
         setImagePreview('');
-        await fetchUserPosts();
+        await fetchUserPosts();  // Refresh posts
         setActiveTab('posts');
         alert('Post created successfully!');
       } else {
@@ -924,10 +950,6 @@ export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
       setCreating(false);
     }
   };
-
-  if (status === 'loading') {
-    return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
-  }
 
   const handleDeleteClick = (post) => {
     setPostToDelete(post);
@@ -1232,7 +1254,7 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
               required
               value={newPost.content}
               onChange={(e) => setNewPost({...newPost, content: e.target.value})}
-              placeholder="Write your post content here using Markdown...&#10;&#10;## Section Heading&#10;Your content here...&#10;&#10;```jsx&#10;// Code blocks supported&#10;```"
+              placeholder="Write your post content here using Markdown...\n\n## Section Heading\nYour content here...\n\n```jsx\n// Code blocks supported\n```"
               rows="16"
               className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition resize-none font-mono text-sm"
             />

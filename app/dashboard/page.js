@@ -54,31 +54,51 @@
 
 
 // app/dashboard/page.js
-import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
+// import { redirect } from 'next/navigation';
+// import { auth } from '@/auth';
+// import Dashboard from '../components/Dashboard';
+// import Navbar from '../components/Navbar';
+// import Footer from '../components/Footer';
+
+// export default async function DashboardPage({ searchParams }) {
+//   let session;
+//   try {
+//     session = await auth();
+//     if (!session?.user) {
+//       console.log('DashboardPage: No session found, redirecting to /auth/login');
+//       redirect('/auth/login');
+//     }
+//   } catch (error) {
+//     console.error('DashboardPage: auth() error:', error);
+//     redirect('/auth/login');
+//   }
+
+//   const baseUrl = process.env.NEXTAUTH_URL || 'https://js-performance-blog.vercel.app';
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+//       <Navbar showPostsLink={true} showFeatures={false} showTech={false} />
+//       <Dashboard initialPosts={[]} userId={session.user.id} baseUrl={baseUrl} />
+//       <Footer />
+//     </div>
+//   );
+// }
+
+
+
+
 import Dashboard from '../components/Dashboard';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
-export default async function DashboardPage({ searchParams }) {
-  let session;
-  try {
-    session = await auth();
-    if (!session?.user) {
-      console.log('DashboardPage: No session found, redirecting to /auth/login');
-      redirect('/auth/login');
-    }
-  } catch (error) {
-    console.error('DashboardPage: auth() error:', error);
-    redirect('/auth/login');
-  }
-
+export default function DashboardPage({ searchParams }) {
+  // No auth() call here—handle in client component
   const baseUrl = process.env.NEXTAUTH_URL || 'https://js-performance-blog.vercel.app';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       <Navbar showPostsLink={true} showFeatures={false} showTech={false} />
-      <Dashboard initialPosts={[]} userId={session.user.id} baseUrl={baseUrl} />
+      <Dashboard initialPosts={[]} baseUrl={baseUrl} /> {/* Remove userId prop */}
       <Footer />
     </div>
   );
