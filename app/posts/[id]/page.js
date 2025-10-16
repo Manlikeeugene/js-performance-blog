@@ -164,13 +164,12 @@ const dummyRelatedPosts = [
 ];
 
 async function fetchPost(id) {
-const baseUrl = process.env.NEXTAUTH_URL
   
   // Await cookies() for async resolution in Next.js 15
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
   
-  const res = await fetch(`${baseUrl}/api/posts/${id}`, { 
+  const res = await fetch(`/api/posts/${id}`, { 
     cache: 'no-store',
     headers: { 
       'Content-Type': 'application/json',
@@ -196,13 +195,12 @@ const baseUrl = process.env.NEXTAUTH_URL
 }
 
 async function fetchRelatedPosts(category, currentId) {
- const baseUrl = process.env.NEXTAUTH_URL
-  
+   
   // Await cookies()
   const cookieStore = await cookies();
   const cookieHeader = cookieStore.getAll().map(c => `${c.name}=${c.value}`).join('; ');
   
-  const res = await fetch(`${baseUrl}/api/posts?category=${category}&excludeId=${currentId}&limit=3`, { 
+  const res = await fetch(`/api/posts?category=${category}&excludeId=${currentId}&limit=3`, { 
     cache: 'no-store',
     headers: { 
       'Content-Type': 'application/json',

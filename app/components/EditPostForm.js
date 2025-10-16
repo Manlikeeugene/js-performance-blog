@@ -64,8 +64,8 @@ const EditPostForm = ({ initialPost, userId }) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const baseUrl = process.env.NEXTAUTH_URL
-      const response = await fetch(`${baseUrl}/api/upload`, { method: 'POST', body: formData });
+      
+      const response = await fetch(`/api/upload`, { method: 'POST', body: formData });
 
       if (response.ok) {
         const data = await response.json();
@@ -91,8 +91,7 @@ const EditPostForm = ({ initialPost, userId }) => {
     setUpdating(true);
     setError('');
     try {
-      const baseUrl = process.env.NEXTAUTH_URL
-      const response = await fetch(`${baseUrl}/api/posts/${initialPost._id}`, {
+      const response = await fetch(`/api/posts/${initialPost._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
