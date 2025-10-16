@@ -1,45 +1,66 @@
-
 // 'use client';
 
-// import { useState, useEffect } from 'react';
+// import { useState, useEffect, createContext } from 'react';
 // import { usePathname } from 'next/navigation';
-// import LoadingSpinner from './LoadingSpinner'; // Your spinner
+// import LoadingSpinner from './LoadingSpinner';
+
+// export const LoadingContext = createContext();
+
+// export function useLoading() {
+//   return useContext(LoadingContext);
+// }
 
 // export default function LoadingProvider({ children }) {
 //   const [isLoading, setIsLoading] = useState(false);
 //   const pathname = usePathname();
 
 //   useEffect(() => {
-//     let timer;
-//     setIsLoading(true); // Show on path change
-//     document.body.style.overflow = 'hidden'; // Prevent scroll
-
-//     // Min 300ms show, then hide
-//     timer = setTimeout(() => {
-//       setIsLoading(false);
+//     if (isLoading) {
+//       document.body.style.overflow = 'hidden';
+//     } else {
 //       document.body.style.overflow = 'unset';
-//     }, 300);
+//     }
+//   }, [isLoading]);
 
-//     return () => clearTimeout(timer);
-//   }, [pathname]); // Triggers on every route change
+//   useEffect(() => {
+//     setIsLoading(true); // Show on path change
+//     const minDuration = 800; // Min ms spinner shows (adjust for feel)
+
+//     // Wait for full page load (assets + data)
+//     const handleLoad = () => {
+//       const elapsed = Date.now() - startTime;
+//       const delay = Math.max(0, minDuration - elapsed);
+//       setTimeout(() => setIsLoading(false), delay);
+//     };
+
+//     const startTime = Date.now();
+//     if (document.readyState === 'complete') {
+//       handleLoad(); // Already loaded
+//     } else {
+//       window.addEventListener('load', handleLoad);
+//       return () => window.removeEventListener('load', handleLoad);
+//     }
+//   }, [pathname]);
+
+//   const value = { setIsLoading };
 
 //   return (
-//     <>
+//     <LoadingContext.Provider value={value}>
 //       {children}
 //       {isLoading && (
 //         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
 //           <LoadingSpinner message="Navigating..." />
 //         </div>
 //       )}
-//     </>
+//     </LoadingContext.Provider>
 //   );
 // }
 
 
 'use client';
 
-import { useState, useEffect, createContext } from 'react';
-import { usePathname } from 'next/navigation';
+import { useState, useEffect, createContext, useContext } from 'react';  // Add useContext if not there
+import { usePathname, useRouter } from 'next/navigation';  // Add useRouter
 import LoadingSpinner from './LoadingSpinner';
 
 export const LoadingContext = createContext();
@@ -51,6 +72,7 @@ export function useLoading() {
 export default function LoadingProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();  // New: For route events
 
   useEffect(() => {
     if (isLoading) {
@@ -61,24 +83,39 @@ export default function LoadingProvider({ children }) {
   }, [isLoading]);
 
   useEffect(() => {
-    setIsLoading(true); // Show on path change
-    const minDuration = 800; // Min ms spinner shows (adjust for feel)
-
-    // Wait for full page load (assets + data)
-    const handleLoad = () => {
-      const elapsed = Date.now() - startTime;
-      const delay = Math.max(0, minDuration - elapsed);
-      setTimeout(() => setIsLoading(false), delay);
+    // New: Listen to route change events instead of just pathname
+    const handleRouteChangeStart = () => {
+      setIsLoading(true);
     };
 
-    const startTime = Date.now();
-    if (document.readyState === 'complete') {
-      handleLoad(); // Already loaded
-    } else {
-      window.addEventListener('load', handleLoad);
-      return () => window.removeEventListener('load', handleLoad);
-    }
-  }, [pathname]);
+    const handleRouteChangeComplete = () => {
+      const minDuration = 800;
+      const startTime = Date.now();  // Track start time
+      const handleLoad = () => {
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(0, minDuration - elapsed);
+        setTimeout(() => setIsLoading(false), delay);
+      };
+
+      if (document.readyState === 'complete') {
+        handleLoad();
+      } else {
+        window.addEventListener('load', handleLoad);
+        return () => window.removeEventListener('load', handleLoad);
+      }
+    };
+
+    // Subscribe to events
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+    router.events.on('routeChangeError', () => setIsLoading(false));  // Handle errors
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+      router.events.off('routeChangeError', () => setIsLoading(false));
+    };
+  }, [router]);  // Depend on router instead of pathname
 
   const value = { setIsLoading };
 

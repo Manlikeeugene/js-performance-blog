@@ -4,10 +4,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Clock, User, Calendar, TrendingUp, ArrowLeft, Share2, Bookmark, ThumbsUp, MessageCircle, Zap, ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
-import Link from 'next/link';
+// import Link from 'next/link';
 import Image from 'next/image';
 import PostCard from './PostCard'; // For related posts; adjust if needed
 import CustomLink from './CustomLink';
+import { useMemo } from 'react';  // Add at top if not already
 
 // Custom markdown processing functions (from original)
 const processInline = (text) => {
@@ -191,9 +192,11 @@ const parseContent = (content) => {
 export default function ClientPostView({ post, relatedPosts }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [tocOpen, setTocOpen] = useState(false);
-  const [tocItems, setTocItems] = useState([]);
+  // const [tocItems, setTocItems] = useState([]);
   const [copiedCode, setCopiedCode] = useState(null);
   const [likes, setLikes] = useState(post?.likes || 0);
+
+  const tocItems = useMemo(() => extractHeadings(post?.content || ''), [post?.content]);
 
   useEffect(() => {
     setTocItems(extractHeadings(post?.content || ''));
