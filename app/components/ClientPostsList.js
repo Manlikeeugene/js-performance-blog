@@ -143,7 +143,7 @@ export default function ClientPostsList({ initialPosts, baseUrl }) {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const res = await fetch(`${baseUrl}/api/posts`, {
+        const res = await fetch(`/api/posts`, {
           cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',

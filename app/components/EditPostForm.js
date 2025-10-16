@@ -338,7 +338,7 @@ const EditPostForm = ({ id, userId, baseUrl }) => {
   useEffect(() => {
     async function fetchPost() {
       try {
-        const res = await fetch(`${baseUrl}/api/posts/${id}`, {
+        const res = await fetch(`/api/posts/${id}`, {
           cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
@@ -439,7 +439,7 @@ const EditPostForm = ({ id, userId, baseUrl }) => {
     setUpdating(true);
     setError('');
     try {
-      const response = await fetch(`${baseUrl}/api/posts/${id}`, {
+      const response = await fetch(`/api/posts/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

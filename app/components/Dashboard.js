@@ -761,7 +761,7 @@ export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
     async function fetchUserPosts() {
       setLoadingPosts(true);
       try {
-        const res = await fetch(`${baseUrl}/api/posts?userId=${userId}`, {
+        const res = await fetch(`/api/posts?userId=${userId}`, {
           cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',

@@ -694,7 +694,7 @@ export default function ClientPostView({ id, dummyPost, dummyRelatedPosts, baseU
   useEffect(() => {
     async function fetchPost() {
       try {
-        const res = await fetch(`${baseUrl}/api/posts/${id}`, {
+        const res = await fetch(`/api/posts/${id}`, {
           cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
@@ -723,7 +723,7 @@ export default function ClientPostView({ id, dummyPost, dummyRelatedPosts, baseU
 
     async function fetchRelatedPosts(category, currentId) {
       try {
-        const res = await fetch(`${baseUrl}/api/posts?category=${category}&excludeId=${currentId}&limit=3`, {
+        const res = await fetch(`/api/posts?category=${category}&excludeId=${currentId}&limit=3`, {
           cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
