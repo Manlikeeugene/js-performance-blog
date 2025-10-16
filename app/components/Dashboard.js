@@ -67,10 +67,7 @@ export default function Dashboard({ initialPosts = [], userId }) {
     if (!userId) return;
     setLoadingPosts(true);
     try {
-      const baseUrl = process.env.VERCEL_URL 
-        ? `https://${process.env.VERCEL_URL}` 
-        : 'http://localhost:3000';
-      const res = await fetch(`${baseUrl}/api/posts?userId=${userId}`);
+      const res = await fetch(`/api/posts?userId=${userId}`);
       if (res.ok) {
         const posts = await res.json();
         setUserPosts(posts);
@@ -104,10 +101,7 @@ export default function Dashboard({ initialPosts = [], userId }) {
     if (postToDelete?._id === postId) {
       setSubmitting(true);
       try {
-        const baseUrl = process.env.VERCEL_URL 
-          ? `https://${process.env.VERCEL_URL}` 
-          : 'http://localhost:3000';
-        const response = await fetch(`${baseUrl}/api/posts/${postId}`, {
+        const response = await fetch(`/api/posts/${postId}`, {
           method: 'DELETE',
         });
         if (response.ok) {
@@ -153,11 +147,8 @@ export default function Dashboard({ initialPosts = [], userId }) {
       const formData = new FormData();
       formData.append('file', file);
 
-      const baseUrl = process.env.VERCEL_URL 
-        ? `https://${process.env.VERCEL_URL}` 
-        : 'http://localhost:3000';
       
-      const response = await fetch(`${baseUrl}/api/upload`, {
+      const response = await fetch(`/api/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -182,10 +173,7 @@ export default function Dashboard({ initialPosts = [], userId }) {
   e.preventDefault();
   setCreating(true);
   try {
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/posts`, {
+    const response = await fetch(`/api/posts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
