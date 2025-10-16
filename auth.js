@@ -6,6 +6,7 @@
 // let getUserModel;
 
 // export const { handlers, signIn, signOut, auth } = NextAuth({
+//   trustHost: true,  // Add this to fix UntrustedHost errors (safe for dev; in prod, use AUTH_TRUST_HOST env var or specific hosts)
 //   providers: [
 //     Credentials({
 //       credentials: {
@@ -69,10 +70,10 @@
 // });
 
 
+
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import connectDB from '@/lib/db';
 // Dynamic import for User
 let getUserModel;
 
@@ -89,6 +90,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error('Email and password required');
         }
 
+        // Dynamic import for connectDB here (avoids top-level Mongoose load for Edge compatibility)
+        const { default: connectDB } = await import('@/lib/db');
         await connectDB();
         
         // Dynamic get model

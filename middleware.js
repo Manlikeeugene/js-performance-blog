@@ -1,40 +1,43 @@
-// import NextAuth from 'next-auth';
+// import { auth } from '@/auth';
 // import { NextResponse } from 'next/server';
-// import { authConfig } from './auth.config';
 
-// const { auth: middlewareFn } = NextAuth(authConfig);
-
-// export default middlewareFn((req) => {
-//   const { nextUrl } = req;
+// export default auth((req) => {
 //   const isLoggedIn = !!req.auth;
+//   const { pathname } = req.nextUrl;
 
-//   // const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
-//   // if (isOnDashboard) {
-//   //   if (!isLoggedIn) {
-//   //     return NextResponse.redirect(new URL('/login', nextUrl));
-//   //   }
-//   //   return NextResponse.next();  // Allow
-//   // }
+//   // Protected routes
+//   const protectedRoutes = ['/dashboard', '/posts/create'];
+//   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route)) || 
+//                           pathname.match(/^\/posts\/[^\/]+\/edit$/);
 
-//   // // Redirect logged-in from public to dashboard
-//   // if (isLoggedIn && !isOnDashboard) {
-//   //   return NextResponse.redirect(new URL('/dashboard', nextUrl));
-//   // }
+//   if (isProtectedRoute && !isLoggedIn) {
+//     const loginUrl = new URL('/login', req.url);
+//     loginUrl.searchParams.set('callbackUrl', pathname);
+//     return NextResponse.redirect(loginUrl);
+//   }
 
-//   return NextResponse.next();  // Public access
+//   return NextResponse.next();
 // });
 
 // export const config = {
-//   matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+//   matcher: [
+//     '/dashboard/:path*',
+//     '/posts/create',
+//     '/posts/:id/edit',
+//   ]
 // };
 
 
 
-import { auth } from '@/auth';
+import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
+export default async function middleware(req) {
+  // Get the secret from env or header (for NextAuth)
+  const secret = req.headers.get('x-secret') || process.env.NEXTAUTH_SECRET;
+  const token = await getToken({ req, secret });
+
+  const isLoggedIn = !!token;
   const { pathname } = req.nextUrl;
 
   // Protected routes
@@ -49,7 +52,7 @@ export default auth((req) => {
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [

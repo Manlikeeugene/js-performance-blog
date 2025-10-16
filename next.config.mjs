@@ -1,3 +1,10 @@
+
+// import path from 'path'
+// import { fileURLToPath } from 'url'
+
+// const __filename = fileURLToPath(import.meta.url)
+// const __dirname = path.dirname(__filename)
+
 // /** @type {import('next').NextConfig} */
 // const nextConfig = {
 //   images: {
@@ -16,14 +23,14 @@
 //       },
 //     ],
 //   },
-//   experimental: {
-//     turbopack: {
-//       root: './',  // Force project root
-//     },
+//   turbopack: {
+//     root: path.join(__dirname, '.'),  // Absolute path to project root (adjust if needed for monorepo)
 //   },
-// };
+//   // Add this if you still see the workspace root warning after the above
+//   // outputFileTracingRoot: path.join(__dirname, '.'),
+// }
 
-// export default nextConfig;
+// export default nextConfig
 
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -49,10 +56,10 @@ const nextConfig = {
       },
     ],
   },
-  turbopack: {
-    root: path.join(__dirname, '.'),  // Absolute path to project root (adjust if needed for monorepo)
-  },
-  // Add this if you still see the workspace root warning after the above
+  // turbopack: {  // Disabled for production deploys to avoid build instability
+  //   root: path.join(__dirname, '.'),
+  // },
+  // Uncomment below if workspace root warning persists (helps with multiple lockfiles)
   // outputFileTracingRoot: path.join(__dirname, '.'),
 }
 
