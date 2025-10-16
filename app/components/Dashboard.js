@@ -1,17 +1,14 @@
-
-// // components/Dashboard.js (fixed mobile + inline create)
-
 // 'use client';
 
 // import React, { useState, useEffect } from 'react';
 // import { useRouter } from 'next/navigation';
 // import { useSession, signOut } from 'next-auth/react';
-// import Image from 'next/image';  // Add this for image optimization
+// import Image from 'next/image'; // For image optimization
 // import { 
 //   Zap, Menu, X, Home, FileText, PlusCircle, Settings, User, 
 //   TrendingUp, Eye, ThumbsUp, MessageCircle, BarChart3, 
 //   Clock, Edit, Trash2, Search, Filter, Bell, LogOut,
-//   Activity, Users, BookOpen, Calendar, Image, Upload
+//   Activity, Users, BookOpen, Calendar, Upload, Image as ImageIcon // Alias Image to ImageIcon
 // } from 'lucide-react';
 // import Link from 'next/link';
 // import PostCard from './PostCard';
@@ -68,7 +65,6 @@
 //     if (!userId) return;
 //     setLoadingPosts(true);
 //     try {
-      
 //       const res = await fetch(`/api/posts?userId=${userId}`);
 //       if (res.ok) {
 //         const posts = await res.json();
@@ -149,7 +145,6 @@
 //       const formData = new FormData();
 //       formData.append('file', file);
 
-            
 //       const response = await fetch(`/api/upload`, {
 //         method: 'POST',
 //         body: formData,
@@ -172,50 +167,50 @@
 //   };
 
 //   const handleCreatePost = async (e) => {
-//   e.preventDefault();
-//   setCreating(true);
-//   try {
-//     const response = await fetch(`/api/posts`, {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify({
-//         ...newPost,
-//         tags: newPost.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-//         author: userId, // Use ID, not name
-//         authorBio: newPost.authorBio || 'Content Creator'
-//       })
-//     });
-    
-//     console.log('Create response status:', response.status); // Debug log
-//     const responseData = await response.json();
-//     console.log('Create response data:', responseData); // Debug: Check for {post, message}
-    
-//     if (response.ok && responseData.post) {
-//       setNewPost({
-//         title: '',
-//         content: '',
-//         excerpt: '',
-//         authorBio: '',
-//         readTime: '',
-//         category: 'Performance',
-//         tags: '',
-//         image: ''
+//     e.preventDefault();
+//     setCreating(true);
+//     try {
+//       const response = await fetch(`/api/posts`, {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({
+//           ...newPost,
+//           tags: newPost.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+//           author: userId, // Use ID, not name
+//           authorBio: newPost.authorBio || 'Content Creator'
+//         })
 //       });
-//       setImagePreview('');
-//       await fetchUserPosts();
-//       setActiveTab('posts');
-//       alert('Post created successfully!'); // Optional success feedback
-//     } else {
-//       console.error('Failed to create post:', responseData.error || 'Unknown error');
-//       alert(`Failed to create post: ${responseData.error || 'Server error'}`);
+      
+//       console.log('Create response status:', response.status); // Debug log
+//       const responseData = await response.json();
+//       console.log('Create response data:', responseData); // Debug: Check for {post, message}
+      
+//       if (response.ok && responseData.post) {
+//         setNewPost({
+//           title: '',
+//           content: '',
+//           excerpt: '',
+//           authorBio: '',
+//           readTime: '',
+//           category: 'Performance',
+//           tags: '',
+//           image: ''
+//         });
+//         setImagePreview('');
+//         await fetchUserPosts();
+//         setActiveTab('posts');
+//         alert('Post created successfully!'); // Optional success feedback
+//       } else {
+//         console.error('Failed to create post:', responseData.error || 'Unknown error');
+//         alert(`Failed to create post: ${responseData.error || 'Server error'}`);
+//       }
+//     } catch (error) {
+//       console.error('Create error:', error);
+//       alert('Error creating post');
+//     } finally {
+//       setCreating(false);
 //     }
-//   } catch (error) {
-//     console.error('Create error:', error);
-//     alert('Error creating post');
-//   } finally {
-//     setCreating(false);
-//   }
-// };
+//   };
 
 //   if (status === 'loading') {
 //     return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
@@ -307,7 +302,6 @@
 //                 <h3 className="text-xl font-bold">Delete Post</h3>
 //               </div>
 //               <p className="text-slate-400 mb-2">Are you sure you want to delete this post?</p>
-//               {/* <p className="text-white font-medium mb-4 p-3 bg-slate-800/50 rounded-lg">"{postToDelete.title}"</p> */}
 //               <p className="text-white font-medium mb-4 p-3 bg-slate-800/50 rounded-lg">&quot;{postToDelete.title}&quot;</p>
 //               <p className="text-sm text-slate-500 mb-6">This action cannot be undone.</p>
 //               <div className="flex gap-3">
@@ -408,7 +402,6 @@
 //               {recentActivity.map((activity, idx) => (
 //                 <li key={idx} className="text-sm text-slate-400 flex items-center gap-2">
 //                   <div className="w-2 h-2 bg-emerald-400 rounded-full" />
-//                   {/* <span>{activity.user} {activity.action} "{activity.post || 'your profile'}" - {activity.time}</span> */}
 //                   <span>{activity.user} {activity.action} &quot;{activity.post || 'your profile'}&quot; - {activity.time}</span>
 //                 </li>
 //               ))}
@@ -559,7 +552,7 @@
 //             <div className="space-y-4">
 //               <div className="flex items-center gap-4">
 //                 <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 border-2 border-dashed border-slate-700 rounded-lg hover:border-emerald-500 transition cursor-pointer">
-//                   <Upload className="w-5 h-5 text-slate-400" />
+//                   <ImageIcon className="w-5 h-5 text-slate-400" /> {/* Changed from Image to ImageIcon */}
 //                   <span className="text-slate-400">
 //                     {uploadingImage ? 'Uploading...' : 'Upload Image'}
 //                   </span>
@@ -575,12 +568,7 @@
               
 //               {imagePreview && (
 //                 <div className="relative rounded-lg overflow-hidden border border-slate-700">
-//                   {/* <img 
-//                     src={imagePreview} 
-//                     alt="Preview" 
-//                     className="w-full h-48 object-cover"
-//                   /> */}
-//                   <div className="relative w-full h-48"> 
+//                   <div className="relative w-full h-48">
 //                     <Image 
 //                       src={imagePreview} 
 //                       alt="Preview" 
@@ -717,12 +705,12 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import Image from 'next/image'; // For image optimization
-import { 
-  Zap, Menu, X, Home, FileText, PlusCircle, Settings, User, 
-  TrendingUp, Eye, ThumbsUp, MessageCircle, BarChart3, 
+import Image from 'next/image';
+import {
+  Zap, Menu, X, Home, FileText, PlusCircle, Settings, User,
+  TrendingUp, Eye, ThumbsUp, MessageCircle, BarChart3,
   Clock, Edit, Trash2, Search, Filter, Bell, LogOut,
-  Activity, Users, BookOpen, Calendar, Upload, Image as ImageIcon // Alias Image to ImageIcon
+  Activity, Users, BookOpen, Calendar, Upload, Image as ImageIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import PostCard from './PostCard';
@@ -738,7 +726,7 @@ const stats = [
 
 const recentActivity = [];
 
-export default function Dashboard({ initialPosts = [], userId }) {
+export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -749,7 +737,7 @@ export default function Dashboard({ initialPosts = [], userId }) {
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
   const [userPosts, setUserPosts] = useState(initialPosts);
-  const [loadingPosts, setLoadingPosts] = useState(false);
+  const [loadingPosts, setLoadingPosts] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   // Create post form states
@@ -768,32 +756,43 @@ export default function Dashboard({ initialPosts = [], userId }) {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    if (status === 'loading') return;
-    if (!session) {
-      router.push('/login');
-    }
-    setUserPosts(initialPosts);
-  }, [session, status, router, initialPosts]);
+    if (!userId || !baseUrl) return;
 
-  const fetchUserPosts = async () => {
-    if (!userId) return;
-    setLoadingPosts(true);
-    try {
-      const res = await fetch(`/api/posts?userId=${userId}`);
-      if (res.ok) {
-        const posts = await res.json();
-        setUserPosts(posts);
-      } else {
-        console.error('Failed to fetch posts');
+    async function fetchUserPosts() {
+      setLoadingPosts(true);
+      try {
+        const res = await fetch(`${baseUrl}/api/posts?userId=${userId}`, {
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!res.ok) {
+          console.error('Posts fetch failed:', res.status, await res.text());
+          throw new Error('Failed to fetch user posts');
+        }
+
+        const data = await res.json();
+        // Format date if from DB
+        const formattedPosts = data.map(post => ({
+          ...post,
+          date: post.createdAt ? new Date(post.createdAt).toISOString().split('T')[0] : post.date
+        }));
+
+        setUserPosts(formattedPosts.length > 0 ? formattedPosts : initialPosts);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        setUserPosts(initialPosts); // Fallback to empty array
+      } finally {
+        setLoadingPosts(false);
       }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-    } finally {
-      setLoadingPosts(false);
     }
-  };
 
-  const filteredPosts = userPosts.filter(post => 
+    fetchUserPosts();
+  }, [userId, baseUrl, initialPosts]);
+
+  const filteredPosts = userPosts.filter(post =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -853,7 +852,7 @@ export default function Dashboard({ initialPosts = [], userId }) {
     }
 
     setUploadingImage(true);
-    
+
     try {
       // Create FormData for image upload
       const formData = new FormData();
@@ -866,9 +865,9 @@ export default function Dashboard({ initialPosts = [], userId }) {
 
       if (response.ok) {
         const data = await response.json();
-        setNewPost(prev => ({...prev, image: data.url})); // secure_url
+        setNewPost(prev => ({...prev, image: data.url}));
         setImagePreview(data.url);
-        console.log('Uploaded:', data.public_id); // Optional: Log public_id for ref
+        console.log('Uploaded:', data.public_id);
       } else {
         alert('Failed to upload image');
       }
@@ -890,15 +889,15 @@ export default function Dashboard({ initialPosts = [], userId }) {
         body: JSON.stringify({
           ...newPost,
           tags: newPost.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-          author: userId, // Use ID, not name
+          author: userId,
           authorBio: newPost.authorBio || 'Content Creator'
         })
       });
-      
-      console.log('Create response status:', response.status); // Debug log
+
+      console.log('Create response status:', response.status);
       const responseData = await response.json();
-      console.log('Create response data:', responseData); // Debug: Check for {post, message}
-      
+      console.log('Create response data:', responseData);
+
       if (response.ok && responseData.post) {
         setNewPost({
           title: '',
@@ -913,7 +912,7 @@ export default function Dashboard({ initialPosts = [], userId }) {
         setImagePreview('');
         await fetchUserPosts();
         setActiveTab('posts');
-        alert('Post created successfully!'); // Optional success feedback
+        alert('Post created successfully!');
       } else {
         console.error('Failed to create post:', responseData.error || 'Unknown error');
         alert(`Failed to create post: ${responseData.error || 'Server error'}`);
@@ -930,8 +929,6 @@ export default function Dashboard({ initialPosts = [], userId }) {
     return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
   }
 
-  if (!session) return null;
-
   const handleDeleteClick = (post) => {
     setPostToDelete(post);
     setShowDeleteDialog(true);
@@ -939,7 +936,7 @@ export default function Dashboard({ initialPosts = [], userId }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white pt-16 sm:pt-20">
-      {/* Sidebar - Adjusted to start below navbar */}
+      {/* Sidebar */}
       <aside className={`fixed top-16 sm:top-20 bottom-0 left-0 z-40 w-64 bg-slate-900 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out border-r border-slate-700`}>
         <div className="flex items-center justify-between p-4 border-b border-slate-700">
           <h2 className="text-xl font-bold">Dashboard</h2>
@@ -977,12 +974,11 @@ export default function Dashboard({ initialPosts = [], userId }) {
         <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Main Content - Adjusted padding for navbar and sidebar */}
+      {/* Main Content */}
       <main className="lg:ml-64 p-4 sm:p-6 min-h-screen">
         {/* Header with Menu Button and Title */}
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <div className="flex items-center gap-3">
-            {/* Mobile Menu Button - Now inside main content */}
             <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden p-2 bg-slate-800/50 rounded-lg border border-slate-700"
@@ -991,10 +987,9 @@ export default function Dashboard({ initialPosts = [], userId }) {
             </button>
             <h1 className="text-2xl font-bold">Dashboard</h1>
           </div>
-          {/* User Greeting */}
           <div className="flex items-center gap-2 text-sm text-slate-400">
             <User className="w-4 h-4" />
-            <span className="hidden sm:inline">Welcome back,</span> {session.user.name || session.user.email}
+            <span className="hidden sm:inline">Welcome back,</span> {session?.user?.name || session?.user?.email}
           </div>
         </div>
 
@@ -1181,13 +1176,10 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
           <PlusCircle className="w-6 h-6 text-emerald-400" />
           Create New Post
         </h3>
-        
+
         <form onSubmit={onCreate} className="space-y-6">
-          {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Post Title *
-            </label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Post Title *</label>
             <input
               type="text"
               required
@@ -1198,11 +1190,8 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
             />
           </div>
 
-          {/* Excerpt */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Excerpt *
-            </label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Excerpt *</label>
             <textarea
               required
               value={newPost.excerpt}
@@ -1213,12 +1202,9 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
             />
           </div>
 
-          {/* Author Bio and Read Time Row */}
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Author Bio
-              </label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Author Bio</label>
               <input
                 type="text"
                 value={newPost.authorBio}
@@ -1229,9 +1215,7 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Read Time
-              </label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Read Time</label>
               <input
                 type="text"
                 value={newPost.readTime}
@@ -1242,11 +1226,8 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
             </div>
           </div>
 
-          {/* Content */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Content * (Markdown supported)
-            </label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Content * (Markdown supported)</label>
             <textarea
               required
               value={newPost.content}
@@ -1258,18 +1239,13 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
             <p className="text-xs text-slate-400 mt-2">Supports Markdown formatting including headers, lists, code blocks, and more</p>
           </div>
 
-          {/* Image Upload */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Featured Image
-            </label>
+            <label className="block text-sm font-medium text-slate-300 mb-2">Featured Image</label>
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 border-2 border-dashed border-slate-700 rounded-lg hover:border-emerald-500 transition cursor-pointer">
-                  <ImageIcon className="w-5 h-5 text-slate-400" /> {/* Changed from Image to ImageIcon */}
-                  <span className="text-slate-400">
-                    {uploadingImage ? 'Uploading...' : 'Upload Image'}
-                  </span>
+                  <ImageIcon className="w-5 h-5 text-slate-400" />
+                  <span className="text-slate-400">{uploadingImage ? 'Uploading...' : 'Upload Image'}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -1279,13 +1255,13 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
                   />
                 </label>
               </div>
-              
+
               {imagePreview && (
                 <div className="relative rounded-lg overflow-hidden border border-slate-700">
                   <div className="relative w-full h-48">
-                    <Image 
-                      src={imagePreview} 
-                      alt="Preview" 
+                    <Image
+                      src={imagePreview}
+                      alt="Preview"
                       fill
                       className="object-cover"
                     />
@@ -1306,12 +1282,9 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
             </div>
           </div>
 
-          {/* Category and Tags */}
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Category *
-              </label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Category *</label>
               <select
                 required
                 value={newPost.category}
@@ -1328,9 +1301,7 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Tags
-              </label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">Tags</label>
               <input
                 type="text"
                 value={newPost.tags}
@@ -1342,7 +1313,6 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
             </div>
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-4 pt-4">
             <button
               type="submit"

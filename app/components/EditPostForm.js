@@ -3,6 +3,7 @@
 // import React, { useState, useEffect } from 'react';
 // import { useRouter } from 'next/navigation';
 // import { useSession } from 'next-auth/react';
+// import Image from 'next/image'; // Add for optimized images
 // import { PlusCircle, Upload, X, Image as ImageIcon } from 'lucide-react';
 // import { useTransition } from 'react';
 
@@ -64,7 +65,6 @@
 //       const formData = new FormData();
 //       formData.append('file', file);
 
-      
 //       const response = await fetch(`/api/upload`, { method: 'POST', body: formData });
 
 //       if (response.ok) {
@@ -193,7 +193,14 @@
 //             </label>
 //             {imagePreview && (
 //               <div className="relative rounded-lg overflow-hidden border border-slate-700">
-//                 <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" />
+//                 <div className="relative w-full h-48">
+//                   <Image
+//                     src={imagePreview}
+//                     alt="Preview"
+//                     fill
+//                     className="object-cover"
+//                   />
+//                 </div>
 //                 <button type="button" onClick={handleRemoveImage} className="absolute top-2 right-2 p-2 bg-red-500 rounded-lg">
 //                   <X className="w-4 h-4" />
 //                 </button>
@@ -293,53 +300,99 @@
 
 
 
+
+
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import Image from 'next/image'; // Add for optimized images
+import Image from 'next/image';
 import { PlusCircle, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { useTransition } from 'react';
+import LoadingSpinner from './LoadingSpinner';
 
-const EditPostForm = ({ initialPost, userId }) => {
+const EditPostForm = ({ id, userId, baseUrl }) => {
   const router = useRouter();
-  const { data: session } = useSession();
   const [isPending, startTransition] = useTransition();
-
-  // Form state from initial post
-  const [formData, setFormData] = useState({
-    title: initialPost.title || '',
-    content: initialPost.content || '',
-    excerpt: initialPost.excerpt || '',
-    authorBio: initialPost.authorBio || '',
-    readTime: initialPost.readTime || '',
-    category: initialPost.category || 'Performance',
-    tags: initialPost.tags ? initialPost.tags.join(', ') : '',
-    image: initialPost.image || '',
-    status: initialPost.status || 'draft'
-  });
-  const [imagePreview, setImagePreview] = useState(initialPost.image || '');
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [updating, setUpdating] = useState(false);
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Form state
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    excerpt: '',
+    authorBio: '',
+    readTime: '',
+    category: 'Performance',
+    tags: '',
+    image: '',
+    status: 'draft',
+  });
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [updating, setUpdating] = useState(false);
+
   useEffect(() => {
-    if (initialPost) {
-      setFormData({
-        title: initialPost.title || '',
-        content: initialPost.content || '',
-        excerpt: initialPost.excerpt || '',
-        authorBio: initialPost.authorBio || '',
-        readTime: initialPost.readTime || '',
-        category: initialPost.category || 'Performance',
-        tags: initialPost.tags ? initialPost.tags.join(', ') : '',
-        image: initialPost.image || '',
-        status: initialPost.status || 'draft'
-      });
-      setImagePreview(initialPost.image || '');
+    async function fetchPost() {
+      try {
+        const res = await fetch(`${baseUrl}/api/posts/${id}`, {
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!res.ok) {
+          console.error('Post fetch failed:', res.status, await res.text());
+          throw new Error('Post not found');
+        }
+
+        const data = await res.json();
+        // Flatten author if needed
+        const formattedPost = {
+          ...data,
+          author: typeof data.author === 'object' ? data.author.name || 'Unknown' : data.author,
+          date: data.createdAt ? new Date(data.createdAt).toISOString().split('T')[0] : data.date,
+        };
+
+        // Owner check
+        if (formattedPost.author_id !== userId) {
+          startTransition(() => {
+            router.push('/dashboard');
+          });
+          return;
+        }
+
+        setPost(formattedPost);
+        setFormData({
+          title: formattedPost.title || '',
+          content: formattedPost.content || '',
+          excerpt: formattedPost.excerpt || '',
+          authorBio: formattedPost.authorBio || '',
+          readTime: formattedPost.readTime || '',
+          category: formattedPost.category || 'Performance',
+          tags: formattedPost.tags ? formattedPost.tags.join(', ') : '',
+          image: formattedPost.image || '',
+          status: formattedPost.status || 'draft',
+        });
+        setImagePreview(formattedPost.image || '');
+        setError('');
+      } catch (err) {
+        console.error('Edit post fetch error:', err);
+        setError('Failed to load post.');
+        startTransition(() => {
+          router.push('/dashboard');
+        });
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [initialPost]);
+
+    fetchPost();
+  }, [id, userId, baseUrl, router]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -386,21 +439,21 @@ const EditPostForm = ({ initialPost, userId }) => {
     setUpdating(true);
     setError('');
     try {
-      const response = await fetch(`/api/posts/${initialPost._id}`, {
+      const response = await fetch(`${baseUrl}/api/posts/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
           tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
           author: userId,
-          authorBio: formData.authorBio || session.user.bio || 'Content Creator'
-        })
+          authorBio: formData.authorBio || 'Content Creator',
+        }),
       });
 
       const data = await response.json();
       if (response.ok) {
         startTransition(() => {
-          router.push('/dashboard'); // Redirect to dashboard posts
+          router.push('/dashboard');
         });
       } else {
         setError(data.error || 'Failed to update post');
@@ -412,7 +465,21 @@ const EditPostForm = ({ initialPost, userId }) => {
     }
   };
 
-  if (!session) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <section className="pt-24 sm:pt-32 flex items-center justify-center min-h-[calc(100vh-8rem)]">
+        <LoadingSpinner message="Loading post..." />
+      </section>
+    );
+  }
+
+  if (error && !post) {
+    return (
+      <section className="pt-24 sm:pt-32 flex items-center justify-center min-h-[calc(100vh-8rem)]">
+        <LoadingSpinner message={error} />
+      </section>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -565,19 +632,19 @@ const EditPostForm = ({ initialPost, userId }) => {
         <div className="flex gap-4 pt-4">
           <button
             type="submit"
-            disabled={updating || uploadingImage}
+            disabled={updating || uploadingImage || isPending}
             className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 rounded-lg font-medium transition disabled:opacity-50"
           >
-            {updating ? (
+            {updating || isPending ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <PlusCircle className="w-5 h-5" />
             )}
-            {updating ? 'Updating...' : 'Update Post'}
+            {updating || isPending ? 'Updating...' : 'Update Post'}
           </button>
           <button
             type="button"
-            onClick={() => router.push('/dashboard')}
+            onClick={() => startTransition(() => router.push('/dashboard'))}
             className="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition"
           >
             Cancel
