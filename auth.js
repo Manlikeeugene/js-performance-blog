@@ -2,7 +2,8 @@
 // import Credentials from 'next-auth/providers/credentials';
 // import bcrypt from 'bcryptjs';
 // import connectDB from '@/lib/db';
-// import User from '@/models/User';
+// // Dynamic import for User
+// let getUserModel;
 
 // export const { handlers, signIn, signOut, auth } = NextAuth({
 //   providers: [
@@ -17,6 +18,13 @@
 //         }
 
 //         await connectDB();
+        
+//         // Dynamic get model
+//         if (!getUserModel) {
+//           const mod = await import('@/models/User');
+//           getUserModel = mod.default;
+//         }
+//         const User = getUserModel();
         
 //         const user = await User.findOne({ email: credentials.email });
 //         if (!user) {
@@ -52,15 +60,13 @@
 //     },
 //   },
 //   pages: {
-//     signIn: '/login',
+//     signIn: 'auth/login',
 //   },
 //   session: {
 //     strategy: 'jwt',
 //   },
 //   secret: process.env.NEXTAUTH_SECRET,
 // });
-
-
 
 
 import NextAuth from 'next-auth';
@@ -71,6 +77,7 @@ import connectDB from '@/lib/db';
 let getUserModel;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,  // Add this to fix UntrustedHost errors (safe for dev; in prod, use AUTH_TRUST_HOST env var or specific hosts)
   providers: [
     Credentials({
       credentials: {
