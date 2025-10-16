@@ -53,7 +53,43 @@
 
 
 
-// app/dashboard/page.js
+// // app/dashboard/page.js
+// import { redirect } from 'next/navigation';
+// import { auth } from '@/auth';
+// import Dashboard from '../components/Dashboard';
+// import Navbar from '../components/Navbar';
+// import Footer from '../components/Footer';
+
+// export default async function DashboardPage({ searchParams }) {
+//   let session;
+//   try {
+//     session = await auth();
+//     if (!session?.user) {
+//       console.log('DashboardPage: No session found, redirecting to /auth/login');
+//       redirect('/auth/login');
+//     }
+//   } catch (error) {
+//     console.error('DashboardPage: auth() error:', error);
+//     redirect('/auth/login');
+//   }
+
+//   const baseUrl = process.env.NEXTAUTH_URL || 'https://js-performance-blog.vercel.app';
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
+//       <Navbar showPostsLink={true} showFeatures={false} showTech={false} />
+//       <Dashboard initialPosts={[]} userId={session.user.id} baseUrl={baseUrl} />
+//       <Footer />
+//     </div>
+//   );
+// }
+
+
+
+
+
+
+// app/dashboard/page.js (temporary for testing)
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import Dashboard from '../components/Dashboard';
@@ -61,24 +97,27 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 export default async function DashboardPage({ searchParams }) {
-  let session;
-  try {
-    session = await auth();
-    if (!session?.user) {
-      console.log('DashboardPage: No session found, redirecting to /auth/login');
-      redirect('/auth/login');
-    }
-  } catch (error) {
-    console.error('DashboardPage: auth() error:', error);
-    redirect('/auth/login');
-  }
+  // Comment out the session check for testing
+  // let session;
+  // try {
+  //   session = await auth();
+  //   if (!session?.user) {
+  //     console.log('DashboardPage: No session found, redirecting to /auth/login');
+  //     redirect('/auth/login');
+  //   }
+  // } catch (error) {
+  //   console.error('DashboardPage: auth() error:', error);
+  //   redirect('/auth/login');
+  // }
 
+  // Use a dummy userId for testing
+  const dummyUserId = 'test-user-id';
   const baseUrl = process.env.NEXTAUTH_URL || 'https://js-performance-blog.vercel.app';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       <Navbar showPostsLink={true} showFeatures={false} showTech={false} />
-      <Dashboard initialPosts={[]} userId={session.user.id} baseUrl={baseUrl} />
+      <Dashboard initialPosts={[]} userId={dummyUserId} baseUrl={baseUrl} />
       <Footer />
     </div>
   );
