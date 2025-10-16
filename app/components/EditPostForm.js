@@ -64,7 +64,7 @@ const EditPostForm = ({ initialPost, userId }) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      const baseUrl = process.env.NEXTAUTH_URL
       const response = await fetch(`${baseUrl}/api/upload`, { method: 'POST', body: formData });
 
       if (response.ok) {
@@ -91,7 +91,7 @@ const EditPostForm = ({ initialPost, userId }) => {
     setUpdating(true);
     setError('');
     try {
-      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+      const baseUrl = process.env.NEXTAUTH_URL
       const response = await fetch(`${baseUrl}/api/posts/${initialPost._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
