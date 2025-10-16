@@ -6,6 +6,7 @@
 // }
 
 
+// app/auth/signup/page.js
 import AuthPage from '../../components/AuthPage';
 import AuthLayout from '../../components/AuthLayout';
 

@@ -6,6 +6,7 @@
 //   return <AuthPage mode="login" />;
 // }
 
+// app/auth/login/page.js
 import AuthPage from '../../components/AuthPage';
 import AuthLayout from '../../components/AuthLayout';
 
