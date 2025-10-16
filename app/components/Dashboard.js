@@ -67,7 +67,8 @@ export default function Dashboard({ initialPosts = [], userId }) {
     if (!userId) return;
     setLoadingPosts(true);
     try {
-      const res = await fetch(`/api/posts?userId=${userId}`);
+      const baseUrl = process.env.NEXTAUTH_URL
+      const res = await fetch(`${baseUrl}/api/posts?userId=${userId}`);
       if (res.ok) {
         const posts = await res.json();
         setUserPosts(posts);
@@ -101,7 +102,8 @@ export default function Dashboard({ initialPosts = [], userId }) {
     if (postToDelete?._id === postId) {
       setSubmitting(true);
       try {
-        const response = await fetch(`/api/posts/${postId}`, {
+        const baseUrl = process.env.NEXTAUTH_URL
+        const response = await fetch(`${baseUrl}/api/posts/${postId}`, {
           method: 'DELETE',
         });
         if (response.ok) {
@@ -147,8 +149,9 @@ export default function Dashboard({ initialPosts = [], userId }) {
       const formData = new FormData();
       formData.append('file', file);
 
+      const baseUrl = process.env.NEXTAUTH_URL
       
-      const response = await fetch(`/api/upload`, {
+      const response = await fetch(`${baseUrl}/api/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -173,7 +176,8 @@ export default function Dashboard({ initialPosts = [], userId }) {
   e.preventDefault();
   setCreating(true);
   try {
-    const response = await fetch(`/api/posts`, {
+    const baseUrl = process.env.NEXTAUTH_URL
+    const response = await fetch(`${baseUrl}/api/posts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

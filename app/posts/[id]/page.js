@@ -164,9 +164,7 @@ const dummyRelatedPosts = [
 ];
 
 async function fetchPost(id) {
-  const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}` 
-    : 'http://localhost:3000';
+const baseUrl = process.env.NEXTAUTH_URL
   
   // Await cookies() for async resolution in Next.js 15
   const cookieStore = await cookies();
@@ -198,9 +196,7 @@ async function fetchPost(id) {
 }
 
 async function fetchRelatedPosts(category, currentId) {
-  const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}` 
-    : 'http://localhost:3000';
+ const baseUrl = process.env.NEXTAUTH_URL
   
   // Await cookies()
   const cookieStore = await cookies();
