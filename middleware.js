@@ -100,9 +100,9 @@ export default async function middleware(req) {
 
   if (isProtectedRoute && !isLoggedIn) {
     console.log('Middleware: Redirecting to /auth/login for', pathname);
-    const loginUrl = new URL('/auth/login', req.url);
-    loginUrl.searchParams.set('callbackUrl', pathname);
-    return NextResponse.redirect(loginUrl);
+    // const loginUrl = new URL('/auth/login', req.url);
+    // loginUrl.searchParams.set('callbackUrl', pathname);
+    // return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
