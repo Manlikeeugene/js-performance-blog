@@ -19,26 +19,6 @@
 //             loading="lazy"
 //             className="object-cover group-hover:scale-105 transition-transform duration-500"
 //           />
-//           {isAdmin && (
-//             <div className="absolute top-4 right-4 flex gap-1 bg-black/50 rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
-//               <button
-//                 onClick={() => onEdit(post._id)}
-//                 className="p-1 text-emerald-400 hover:text-emerald-300 rounded-full hover:bg-white/10 transition"
-//                 title="Edit"
-//                 aria-label="Edit post"
-//               >
-//                 <Edit className="w-4 h-4" />
-//               </button>
-//               <button
-//                 onClick={() => onDelete(post._id)}
-//                 className="p-1 text-red-400 hover:text-red-300 rounded-full hover:bg-white/10 transition"
-//                 title="Delete"
-//                 aria-label="Delete post"
-//               >
-//                 <Trash2 className="w-4 h-4" />
-//               </button>
-//             </div>
-//           )}
 //         </div>
 //       )}
 
@@ -73,7 +53,7 @@
 //           ))}
 //         </div>
 
-//         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-slate-700/50 gap-2 sm:gap-0">
+//         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-4 border-t border-slate-700/50 gap-2 sm:gap-0 mb-2 sm:mb-4">
 //           <div className="flex items-center gap-2">
 //             <User className="w-4 h-4 text-slate-400" />
 //             <span className="text-sm text-slate-300">{post.author}</span>
@@ -87,6 +67,29 @@
 //           </span>
 //         </div>
 
+//         {isAdmin && (
+//           <div className="flex justify-end mb-4 opacity-0 group-hover:opacity-100 transition">
+//             <div className="flex gap-1 bg-black/50 rounded-full p-1">
+//               <button
+//                 onClick={() => onEdit(post._id)}
+//                 className="p-1 text-emerald-400 hover:text-emerald-300 rounded-full hover:bg-white/10 transition"
+//                 title="Edit"
+//                 aria-label="Edit post"
+//               >
+//                 <Edit className="w-4 h-4" />
+//               </button>
+//               <button
+//                 onClick={() => onDelete(post._id)}
+//                 className="p-1 text-red-400 hover:text-red-300 rounded-full hover:bg-white/10 transition"
+//                 title="Delete"
+//                 aria-label="Delete post"
+//               >
+//                 <Trash2 className="w-4 h-4" />
+//               </button>
+//             </div>
+//           </div>
+//         )}
+
 //         <CustomLink href={`/posts/${post._id}`}>
 //           <button className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-900/50 hover:bg-emerald-500/20 border border-slate-700 hover:border-emerald-500/50 rounded-lg transition group/btn text-xs sm:text-sm">
 //             <span className="font-medium">Read Article</span>
@@ -99,6 +102,7 @@
 // }
 
 
+
 'use client';
 
 import React from 'react';
@@ -109,7 +113,7 @@ import CustomLink from './CustomLink';
 
 export default function PostCard({ post, isAdmin = false, onEdit, onDelete }) {
   return (
-    <article className="group bg-slate-800/50 rounded-2xl overflow-hidden border border-slate-700 hover:border-emerald-500/50 transition shadow-lg hover:shadow-emerald-500/10">
+    <article className="group bg-slate-800/50 rounded-2xl overflow-hidden border border-slate-700 hover:border-emerald-500/50 transition shadow-lg hover:shadow-emerald-500/10" role="article">
       {post.image && (
         <div className="relative h-48 sm:h-56 overflow-hidden">
           <Image
@@ -169,23 +173,27 @@ export default function PostCard({ post, isAdmin = false, onEdit, onDelete }) {
         </div>
 
         {isAdmin && (
-          <div className="flex justify-end mb-4 opacity-0 group-hover:opacity-100 transition">
-            <div className="flex gap-1 bg-black/50 rounded-full p-1">
+          <div 
+            className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 flex justify-end md:justify-end gap-1 mb-3 md:mb-4"
+            role="group"
+            aria-label="Post actions"
+          >
+            <div className="flex gap-1 bg-black/50 rounded-full p-1 w-full md:w-auto">
               <button
                 onClick={() => onEdit(post._id)}
-                className="p-1 text-emerald-400 hover:text-emerald-300 rounded-full hover:bg-white/10 transition"
+                className="flex-1 md:flex-none p-2 md:p-1 text-emerald-400 hover:text-emerald-300 active:scale-95 rounded-full hover:bg-white/10 transition-all md:hover:bg-white/10"
                 title="Edit"
                 aria-label="Edit post"
               >
-                <Edit className="w-4 h-4" />
+                <Edit className="w-4 h-4 mx-auto md:mx-0" />
               </button>
               <button
                 onClick={() => onDelete(post._id)}
-                className="p-1 text-red-400 hover:text-red-300 rounded-full hover:bg-white/10 transition"
+                className="flex-1 md:flex-none p-2 md:p-1 text-red-400 hover:text-red-300 active:scale-95 rounded-full hover:bg-white/10 transition-all md:hover:bg-white/10"
                 title="Delete"
                 aria-label="Delete post"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4 mx-auto md:mx-0" />
               </button>
             </div>
           </div>
