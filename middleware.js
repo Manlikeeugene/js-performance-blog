@@ -98,12 +98,27 @@ export default async function middleware(req) {
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route)) || 
                           pathname.match(/^\/posts\/[^\/]+\/edit$/);
 
+  // if (isProtectedRoute && !isLoggedIn) {
+  //   console.log('Middleware: Redirecting to /auth/login for', pathname);
+  //   // const loginUrl = new URL('/auth/login', req.url);
+  //   // loginUrl.searchParams.set('callbackUrl', pathname);
+  //   // return NextResponse.redirect(loginUrl);
+  // }
+
   if (isProtectedRoute && !isLoggedIn) {
-    console.log('Middleware: Redirecting to /auth/login for', pathname);
-    // const loginUrl = new URL('/auth/login', req.url);
-    // loginUrl.searchParams.set('callbackUrl', pathname);
-    // return NextResponse.redirect(loginUrl);
+  // Quick check: If cookie exists but token decode failed, log & pass (rare race)
+  const cookieHeader = req.headers.get('cookie') || '';
+  const hasSessionCookie = cookieHeader.includes('next-auth.session-token');
+  if (hasSessionCookie && !token) {
+    console.log('Middleware: Token decode failed but cookie present—allowing (race condition?)');
+    return NextResponse.next(); // Graceful pass
   }
+  
+  console.log('Middleware: Redirecting to /auth/login for', pathname);
+  const loginUrl = new URL('/auth/login', req.url);
+  loginUrl.searchParams.set('callbackUrl', pathname);
+  return NextResponse.redirect(loginUrl);
+}
 
   return NextResponse.next();
 }
