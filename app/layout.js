@@ -36,7 +36,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <SessionProvider> {/* Wrap for useSession */}
+        <SessionProvider> {{refetchOnWindowFocus: true}}
           <LoadingProvider>
             {children}
           </LoadingProvider>

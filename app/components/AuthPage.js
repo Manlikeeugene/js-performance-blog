@@ -94,7 +94,11 @@ export default function AuthPage({ mode = 'login' }) {
       try {
         if (isLogin) {
           console.log('Calling signIn with:', { email: formData.email }); // Add this
+
+          const csrfRes = await fetch('/api/auth/csrf');
+          const csrfData = await csrfRes.json();
           const result = await signIn('credentials', {
+            ...csrfData, // Inject csrfToken
             email: formData.email,
             password: formData.password,
             redirect: false,
@@ -106,7 +110,9 @@ export default function AuthPage({ mode = 'login' }) {
           } else {
             console.log('signIn success, refreshing...');
             router.refresh();
-            router.push('/dashboard');
+            setTimeout(() => {
+              router.push('/dashboard');
+            }, 500);
           }
         } else {
           // Signup
