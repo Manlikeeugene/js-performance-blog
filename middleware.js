@@ -86,7 +86,9 @@ export default async function middleware(req) {
     return NextResponse.next();
   }
 
+  // const token = await getToken({ req, secret });
   const token = await getToken({ req, secret });
+  console.log('Middleware token check:', { isLoggedIn: !!token, tokenExpiry: token?.exp, now: Date.now() / 1000 });
   const isLoggedIn = !!token;
   const { pathname } = req.nextUrl;
 

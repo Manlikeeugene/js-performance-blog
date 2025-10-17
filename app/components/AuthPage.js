@@ -110,9 +110,10 @@ export default function AuthPage({ mode = 'login' }) {
           } else {
             console.log('signIn success, refreshing...');
             router.refresh();
-            setTimeout(() => {
-              router.push('/dashboard');
-            }, 500);
+            window.location.href = result.url || '/dashboard';
+            // setTimeout(() => {
+            //   router.push('/dashboard');
+            // }, 500);
           }
         } else {
           // Signup
