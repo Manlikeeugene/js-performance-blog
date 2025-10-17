@@ -86,21 +86,25 @@ export default function AuthPage({ mode = 'login' }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('handleSubmit triggered:', { isLogin, formData }); // Add this
     setErrorMessage('');
     setSuccessMessage('');
     if (validateForm() && !isSubmitting) {
       setIsSubmitting(true);
       try {
         if (isLogin) {
+          console.log('Calling signIn with:', { email: formData.email }); // Add this
           const result = await signIn('credentials', {
             email: formData.email,
             password: formData.password,
             redirect: false,
           });
+          console.log('signIn result:', result); // Add this
 
           if (result?.error) {
             setErrorMessage(result.error || 'Login failed');
           } else {
+            console.log('signIn success, refreshing...');
             router.refresh();
             router.push('/dashboard');
           }
@@ -130,11 +134,14 @@ export default function AuthPage({ mode = 'login' }) {
           setFormData({ name: '', email: formData.email, password: '', confirmPassword: '' });
         }
       } catch (error) {
+        console.error('signIn exception:', error); // Add this
         console.error('Auth network error:', error);
         setErrorMessage('Network error occurred. Please check your connection.');
       } finally {
         setIsSubmitting(false);
       }
+    } else {
+      console.log('Validation failed, errors:', errors); // Add this
     }
   };
 
