@@ -24,7 +24,7 @@ export default function PostsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      <Navbar showPostsLink={true} showFeatures={false} showTech={false} />
+      <Navbar showPostsLink={false} showFeatures={false} showTech={false} />
       <ClientPostsList initialPosts={dummyPosts} baseUrl={baseUrl} />
       <Footer />
     </div>

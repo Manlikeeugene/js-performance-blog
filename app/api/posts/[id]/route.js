@@ -1,179 +1,54 @@
 // import { NextResponse } from 'next/server';
-// import { getServerSession } from 'next-auth';
-// import { authOptions } from '../../auth/[...nextauth]/route';
 // import connectDB from '@/lib/db';
-// import Post from '@/models/Post';
-
-// // GET single post
-// export async function GET(request, { params }) {
-//   try {
-//     await connectDB();
-    
-//     const post = await Post.findById(params.id)
-//       .populate('author', 'name email image bio');
-
-//     if (!post) {
-//       return NextResponse.json(
-//         { message: 'Post not found' },
-//         { status: 404 }
-//       );
-//     }
-
-//     // Increment views
-//     post.views += 1;
-//     await post.save();
-
-//     return NextResponse.json(post);
-//   } catch (error) {
-//     console.error('GET post error:', error);
-//     return NextResponse.json(
-//       { message: 'Failed to fetch post' },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-// // UPDATE post
-// export async function PATCH(request, { params }) {
-//   try {
-//     const session = await getServerSession(authOptions);
-    
-//     if (!session) {
-//       return NextResponse.json(
-//         { message: 'Unauthorized' },
-//         { status: 401 }
-//       );
-//     }
-
-//     await connectDB();
-    
-//     const post = await Post.findById(params.id);
-    
-//     if (!post) {
-//       return NextResponse.json(
-//         { message: 'Post not found' },
-//         { status: 404 }
-//       );
-//     }
-
-//     // Check ownership
-//     if (post.author.toString() !== session.user.id) {
-//       return NextResponse.json(
-//         { message: 'Forbidden' },
-//         { status: 403 }
-//       );
-//     }
-
-//     const updates = await request.json();
-    
-//     // Recalculate read time if content changed
-//     if (updates.content) {
-//       const wordCount = updates.content.split(/\s+/).length;
-//       updates.readTime = `${Math.ceil(wordCount / 200)} min read`;
-//     }
-
-//     updates.updatedAt = new Date();
-
-//     const updatedPost = await Post.findByIdAndUpdate(
-//       params.id,
-//       updates,
-//       { new: true }
-//     ).populate('author', 'name email image');
-
-//     return NextResponse.json(updatedPost);
-//   } catch (error) {
-//     console.error('PATCH post error:', error);
-//     return NextResponse.json(
-//       { message: 'Failed to update post' },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-// // DELETE post
-// export async function DELETE(request, { params }) {
-//   try {
-//     const session = await getServerSession(authOptions);
-    
-//     if (!session) {
-//       return NextResponse.json(
-//         { message: 'Unauthorized' },
-//         { status: 401 }
-//       );
-//     }
-
-//     await connectDB();
-    
-//     const post = await Post.findById(params.id);
-    
-//     if (!post) {
-//       return NextResponse.json(
-//         { message: 'Post not found' },
-//         { status: 404 }
-//       );
-//     }
-
-//     // Check ownership
-//     if (post.author.toString() !== session.user.id) {
-//       return NextResponse.json(
-//         { message: 'Forbidden' },
-//         { status: 403 }
-//       );
-//     }
-
-//     await Post.findByIdAndDelete(params.id);
-
-//     return NextResponse.json(
-//       { message: 'Post deleted successfully' },
-//       { status: 200 }
-//     );
-//   } catch (error) {
-//     console.error('DELETE post error:', error);
-//     return NextResponse.json(
-//       { message: 'Failed to delete post' },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-// // app/api/posts/[id]/route.js (Updated with dynamic User model for populate)
-// import { NextResponse } from 'next/server';
-// import connectDB from '@/lib/db';
-// import Post from '@/models/Post';
 // import { auth } from '@/auth';
+// // Dynamic models
+// let getPostModel, getUserModel;
 
-// // Dynamic import for User (for populate)
-// let getUserModel;
+// export async function GET(request, context) {
+//   const { params } = await context; // Await context for params in Next.js 15
+//   const { id } = await params;
 
-// export async function GET(request, { params }) {
 //   try {
-//     const session = await auth();
-//     if (!session?.user) {
-//       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-//     }
-
 //     await connectDB();
 
-//     // Dynamic get User model for populate
+//     // Load User model early for populate
 //     if (!getUserModel) {
-//       const mod = await import('@/models/User');
-//       getUserModel = mod.default;
+//       const userMod = await import('@/models/User');
+//       getUserModel = userMod.default;
 //     }
-//     const User = getUserModel();
+//     getUserModel(); // Register schema
 
-//     const { id } = params;
-//     const post = await Post.findById(id)
-//       .populate('author', 'name image') // Uses dynamic User
+//     if (!getPostModel) {
+//       const mod = await import('@/models/Post');
+//       getPostModel = mod.default;
+//     }
+//     const Post = getPostModel();
+
+//     let post = await Post.findById(id)
+//       .populate('author', 'name image bio') // For full post view
 //       .lean();
 
 //     if (!post) {
 //       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
 //     }
 
-//     // Ensure user owns it (for edit/view)
-//     if (post.author._id.toString() !== session.user.id) {
-//       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+//     // Public: Allow if published; else require auth + ownership
+//     if (post.status !== 'published') {
+//       const session = await auth();
+//       if (!session?.user || post.author._id.toString() !== session.user.id) {
+//         return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+//       }
 //     }
+
+//     // Save author_id before flattening
+//     const authorId = post.author?._id?.toString() || '';
+//     // Flatten author to string (for React safety)
+//     post.author = post.author?.name || 'Unknown';
+//     post.author_id = authorId; // Now safe
+//     // Format date
+//     post.date = post.createdAt ? new Date(post.createdAt).toISOString().split('T')[0] : post.date;
+//     // Ensure content is string
+//     post.content = post.content || '';
 
 //     // Simulate delay
 //     await new Promise(resolve => setTimeout(resolve, 300));
@@ -185,8 +60,9 @@
 //   }
 // }
 
-// // Add DELETE for dashboard (protected)
 // export async function DELETE(request, { params }) {
+//   const { id } = await params; // Await for consistency
+
 //   try {
 //     const session = await auth();
 //     if (!session?.user) {
@@ -195,7 +71,17 @@
 
 //     await connectDB();
 
-//     const { id } = params;
+//     if (!getPostModel) {
+//       const mod = await import('@/models/Post');
+//       getPostModel = mod.default;
+//     }
+//     if (!getUserModel) {
+//       const userMod = await import('@/models/User');
+//       getUserModel = userMod.default;
+//     }
+//     const Post = getPostModel();
+//     const User = getUserModel();
+
 //     const post = await Post.findById(id);
 
 //     if (!post) {
@@ -206,6 +92,11 @@
 //       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
 //     }
 
+//     // Remove from user's posts array
+//     const user = await User.findById(session.user.id);
+//     user.posts = user.posts.filter(p => p.toString() !== id);
+//     await user.save();
+
 //     await Post.findByIdAndDelete(id);
 
 //     return NextResponse.json({ message: 'Post deleted successfully' }, { status: 200 });
@@ -215,26 +106,95 @@
 //   }
 // }
 
+// export async function PUT(request, { params }) {
+//   const { id } = await params; // Await for consistency
+
+//   try {
+//     const session = await auth();
+//     if (!session?.user) {
+//       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+//     }
+
+//     const body = await request.json();
+//     const { title, content, excerpt, image, category, tags = [], status, readTime, authorBio } = body;
+
+//     // Validation
+//     if (!title || !content || !excerpt || !category) {
+//       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+//     }
+
+//     await connectDB();
+
+//     if (!getPostModel) {
+//       const mod = await import('@/models/Post');
+//       getPostModel = mod.default;
+//     }
+//     const Post = getPostModel();
+
+//     const post = await Post.findById(id);
+
+//     if (!post) {
+//       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+//     }
+
+//     if (post.author.toString() !== session.user.id) {
+//       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+//     }
+
+//     // Update fields
+//     post.title = title;
+//     post.content = content;
+//     post.excerpt = excerpt;
+//     post.image = image || post.image;
+//     post.category = category;
+//     post.tags = tags;
+//     post.status = status || post.status;
+//     post.readTime = readTime || post.readTime;
+//     post.authorBio = authorBio || post.authorBio;
+
+//     await post.save();
+
+//     // Populate for return
+//     await post.populate('author', 'name image bio');
+//     const authorId = post.author?._id?.toString() || '';
+//     post.author = post.author?.name || 'Unknown';
+//     post.author_id = authorId;
+//     post.date = new Date(post.updatedAt).toISOString().split('T')[0];
+
+//     return NextResponse.json({ message: 'Post updated successfully', post }, { status: 200 });
+//   } catch (error) {
+//     console.error('Error updating post:', error);
+//     return NextResponse.json({ error: 'Failed to update post' }, { status: 500 });
+//   }
+// }
+
+
+
+
+
+
+
+
+
 
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import { auth } from '@/auth';
-// Dynamic models
-let getPostModel, getUserModel;
 
-export async function GET(request, context) {
-  const { params } = await context; // Await context for params in Next.js 15
+let getPostModel, getUserModel, getStatsModel;
+
+export async function GET(request, { params }) {
   const { id } = await params;
 
   try {
     await connectDB();
 
-    // Load User model early for populate
+    // Load User model for populate
     if (!getUserModel) {
       const userMod = await import('@/models/User');
       getUserModel = userMod.default;
     }
-    getUserModel(); // Register schema
+    getUserModel();
 
     if (!getPostModel) {
       const mod = await import('@/models/Post');
@@ -243,7 +203,7 @@ export async function GET(request, context) {
     const Post = getPostModel();
 
     let post = await Post.findById(id)
-      .populate('author', 'name image bio') // For full post view
+      .populate('author', 'name image bio')
       .lean();
 
     if (!post) {
@@ -260,15 +220,15 @@ export async function GET(request, context) {
 
     // Save author_id before flattening
     const authorId = post.author?._id?.toString() || '';
-    // Flatten author to string (for React safety)
+    // Flatten author
     post.author = post.author?.name || 'Unknown';
-    post.author_id = authorId; // Now safe
+    post.author_id = authorId;
     // Format date
     post.date = post.createdAt ? new Date(post.createdAt).toISOString().split('T')[0] : post.date;
     // Ensure content is string
     post.content = post.content || '';
 
-    // Simulate delay
+    // Simulate delay (remove in prod)
     await new Promise(resolve => setTimeout(resolve, 300));
 
     return NextResponse.json(post);
@@ -279,7 +239,7 @@ export async function GET(request, context) {
 }
 
 export async function DELETE(request, { params }) {
-  const { id } = await params; // Await for consistency
+  const { id } = await params;
 
   try {
     const session = await auth();
@@ -297,8 +257,13 @@ export async function DELETE(request, { params }) {
       const userMod = await import('@/models/User');
       getUserModel = userMod.default;
     }
+    if (!getStatsModel) {
+      const statsMod = await import('@/models/Stats');
+      getStatsModel = statsMod.default;
+    }
     const Post = getPostModel();
     const User = getUserModel();
+    const Stats = getStatsModel();
 
     const post = await Post.findById(id);
 
@@ -310,10 +275,14 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
 
-    // Remove from user's posts array
-    const user = await User.findById(session.user.id);
-    user.posts = user.posts.filter(p => p.toString() !== id);
-    await user.save();
+    // Delete post stats
+    await Stats.deleteOne({ entityType: 'post', entityId: id });
+
+    // Update user stats (decrement posts)
+    await Stats.findOneAndUpdate(
+      { entityType: 'user', entityId: session.user.id },
+      { $inc: { posts: -1 }, $set: { updatedAt: new Date() } }
+    );
 
     await Post.findByIdAndDelete(id);
 
@@ -325,7 +294,7 @@ export async function DELETE(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  const { id } = await params; // Await for consistency
+  const { id } = await params;
 
   try {
     const session = await auth();
@@ -359,6 +328,13 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
 
+    // Calculate readTime if content changed
+    let finalReadTime = readTime;
+    if (content && !readTime) {
+      const words = content.split(/\s+/).length;
+      finalReadTime = `${Math.max(1, Math.round(words / 200))} min read`;
+    }
+
     // Update fields
     post.title = title;
     post.content = content;
@@ -367,19 +343,22 @@ export async function PUT(request, { params }) {
     post.category = category;
     post.tags = tags;
     post.status = status || post.status;
-    post.readTime = readTime || post.readTime;
+    post.readTime = finalReadTime || post.readTime;
     post.authorBio = authorBio || post.authorBio;
+    post.updatedAt = new Date();
 
     await post.save();
 
     // Populate for return
     await post.populate('author', 'name image bio');
-    const authorId = post.author?._id?.toString() || '';
-    post.author = post.author?.name || 'Unknown';
-    post.author_id = authorId;
-    post.date = new Date(post.updatedAt).toISOString().split('T')[0];
+    const updatedPost = {
+      ...post.toObject(),
+      author: post.author?.name || 'Unknown',
+      author_id: post.author?._id?.toString() || '',
+      date: new Date(post.updatedAt).toISOString().split('T')[0]
+    };
 
-    return NextResponse.json({ message: 'Post updated successfully', post }, { status: 200 });
+    return NextResponse.json({ message: 'Post updated successfully', post: updatedPost }, { status: 200 });
   } catch (error) {
     console.error('Error updating post:', error);
     return NextResponse.json({ error: 'Failed to update post' }, { status: 500 });

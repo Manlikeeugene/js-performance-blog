@@ -1,4 +1,3 @@
-
 // 'use client';
 
 // import React, { useState, useEffect } from 'react';
@@ -25,9 +24,13 @@
 
 // const recentActivity = [];
 
-// export default function Dashboard({ initialPosts = [], userId, baseUrl }) {
+// export default function Dashboard({ initialPosts = [], baseUrl }) {
 //   const router = useRouter();
 //   const { data: session, status } = useSession();
+
+//   // Compute userId early (before hooks)
+//   const currentUserId = session?.user?.id;
+
 //   const [sidebarOpen, setSidebarOpen] = useState(false);
 //   const [activeTab, setActiveTab] = useState('overview');
 //   const [searchQuery, setSearchQuery] = useState('');
@@ -54,13 +57,14 @@
 //   const [uploadingImage, setUploadingImage] = useState(false);
 //   const [creating, setCreating] = useState(false);
 
+//   // All hooks now called unconditionally
 //   useEffect(() => {
-//     if (!userId || !baseUrl) return;
+//     if (!currentUserId || !baseUrl) return;  // Guard: Skip if no session
 
 //     async function fetchUserPosts() {
 //       setLoadingPosts(true);
 //       try {
-//         const res = await fetch(`/api/posts?userId=${userId}`, {
+//         const res = await fetch(`/api/posts?userId=${currentUserId}`, {
 //           cache: 'no-store',
 //           headers: {
 //             'Content-Type': 'application/json',
@@ -89,7 +93,17 @@
 //     }
 
 //     fetchUserPosts();
-//   }, [userId, baseUrl, initialPosts]);
+//   }, [currentUserId, baseUrl, initialPosts]);
+
+//   // Now safe to early return after all hooks
+//   if (status === 'loading') {
+//     return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
+//   }
+
+//   if (!session?.user) {
+//     router.push('/auth/login');
+//     return null;
+//   }
 
 //   const filteredPosts = userPosts.filter(post =>
 //     post.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -129,6 +143,37 @@
 //       setPostToDelete(null);
 //     }
 //   };
+
+//   // Define fetchUserPosts as a separate function for reuse (e.g., after delete/create)
+//   async function fetchUserPosts() {
+//     setLoadingPosts(true);
+//     try {
+//       const res = await fetch(`/api/posts?userId=${currentUserId}`, {
+//         cache: 'no-store',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//       });
+
+//       if (!res.ok) {
+//         console.error('Posts fetch failed:', res.status, await res.text());
+//         throw new Error('Failed to fetch user posts');
+//       }
+
+//       const data = await res.json();
+//       const formattedPosts = data.map(post => ({
+//         ...post,
+//         date: post.createdAt ? new Date(post.createdAt).toISOString().split('T')[0] : post.date
+//       }));
+
+//       setUserPosts(formattedPosts.length > 0 ? formattedPosts : initialPosts);
+//     } catch (error) {
+//       console.error('Error fetching posts:', error);
+//       setUserPosts(initialPosts);
+//     } finally {
+//       setLoadingPosts(false);
+//     }
+//   }
 
 //   const handleEditPost = (postId) => {
 //     router.push(`/posts/${postId}/edit`);
@@ -188,7 +233,7 @@
 //         body: JSON.stringify({
 //           ...newPost,
 //           tags: newPost.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-//           author: userId,
+//           author: currentUserId,  // Use currentUserId
 //           authorBio: newPost.authorBio || 'Content Creator'
 //         })
 //       });
@@ -209,7 +254,7 @@
 //           image: ''
 //         });
 //         setImagePreview('');
-//         await fetchUserPosts();
+//         await fetchUserPosts();  // Refresh posts
 //         setActiveTab('posts');
 //         alert('Post created successfully!');
 //       } else {
@@ -223,10 +268,6 @@
 //       setCreating(false);
 //     }
 //   };
-
-//   if (status === 'loading') {
-//     return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
-//   }
 
 //   const handleDeleteClick = (post) => {
 //     setPostToDelete(post);
@@ -502,7 +543,7 @@
 //           </div>
 
 //           <div className="grid md:grid-cols-2 gap-6">
-//             <div>
+//             {/* <div>
 //               <label className="block text-sm font-medium text-slate-300 mb-2">Author Bio</label>
 //               <input
 //                 type="text"
@@ -511,7 +552,7 @@
 //                 placeholder="e.g., Senior Frontend Engineer at TechCorp"
 //                 className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
 //               />
-//             </div>
+//             </div> */}
 
 //             <div>
 //               <label className="block text-sm font-medium text-slate-300 mb-2">Read Time</label>
@@ -531,7 +572,7 @@
 //               required
 //               value={newPost.content}
 //               onChange={(e) => setNewPost({...newPost, content: e.target.value})}
-//               placeholder="Write your post content here using Markdown...&#10;&#10;## Section Heading&#10;Your content here...&#10;&#10;```jsx&#10;// Code blocks supported&#10;```"
+//               placeholder="Write your post content here using Markdown...\n\n## Section Heading\nYour content here...\n\n```jsx\n// Code blocks supported\n```"
 //               rows="16"
 //               className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition resize-none font-mono text-sm"
 //             />
@@ -680,6 +721,22 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -696,13 +753,6 @@ import Link from 'next/link';
 import PostCard from './PostCard';
 import StatsGrid from './StatsGrid';
 import CustomLink from './CustomLink';
-
-const stats = [
-  { label: "Total Views", value: "0", change: "+0%", icon: Eye, color: "emerald" },
-  { label: "Total Posts", value: "0", change: "+0", icon: FileText, color: "cyan" },
-  { label: "Total Likes", value: "0", change: "+0%", icon: ThumbsUp, color: "blue" },
-  { label: "Followers", value: "0", change: "+0%", icon: Users, color: "purple" }
-];
 
 const recentActivity = [];
 
@@ -723,6 +773,14 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
   const [userPosts, setUserPosts] = useState(initialPosts);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [stats, setStats] = useState([
+    { label: "Total Views", value: "0", change: "+0%", icon: Eye, color: "emerald" },
+    { label: "Total Posts", value: "0", change: "+0", icon: FileText, color: "cyan" },
+    { label: "Total Likes", value: "0", change: "+0%", icon: ThumbsUp, color: "blue" },
+    { label: "Followers", value: "0", change: "+0%", icon: Users, color: "purple" }
+  ]);
 
   // Create post form states
   const [newPost, setNewPost] = useState({
@@ -739,9 +797,9 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [creating, setCreating] = useState(false);
 
-  // All hooks now called unconditionally
+  // Fetch user posts and dashboard stats
   useEffect(() => {
-    if (!currentUserId || !baseUrl) return;  // Guard: Skip if no session
+    if (!currentUserId || !baseUrl) return;
 
     async function fetchUserPosts() {
       setLoadingPosts(true);
@@ -754,12 +812,10 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
         });
 
         if (!res.ok) {
-          console.error('Posts fetch failed:', res.status, await res.text());
           throw new Error('Failed to fetch user posts');
         }
 
         const data = await res.json();
-        // Format date if from DB
         const formattedPosts = data.map(post => ({
           ...post,
           date: post.createdAt ? new Date(post.createdAt).toISOString().split('T')[0] : post.date
@@ -767,17 +823,44 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
 
         setUserPosts(formattedPosts.length > 0 ? formattedPosts : initialPosts);
       } catch (error) {
-        console.error('Error fetching posts:', error);
-        setUserPosts(initialPosts); // Fallback to empty array
+        setError(error.message || 'Error fetching posts');
+        setUserPosts(initialPosts);
       } finally {
         setLoadingPosts(false);
       }
     }
 
+    async function fetchDashboardStats() {
+      try {
+        const response = await fetch('/api/dashboard', {
+          cache: 'no-store',
+          headers: {
+            // Authorization header added by NextAuth.js
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch stats');
+        }
+
+        const data = await response.json();
+        setStats([
+          { label: 'Total Views', value: data.totalViews.toLocaleString(), change: '+0%', icon: Eye, color: 'emerald' },
+          { label: 'Total Posts', value: data.totalPosts.toLocaleString(), change: '+0', icon: FileText, color: 'cyan' },
+          { label: 'Total Likes', value: data.totalLikes.toLocaleString(), change: '+0%', icon: ThumbsUp, color: 'blue' },
+          { label: 'Followers', value: data.followers.toLocaleString(), change: '+0%', icon: Users, color: 'purple' },
+        ]);
+      } catch (err) {
+        setError(err.message || 'Error fetching dashboard stats');
+      }
+    }
+
     fetchUserPosts();
+    fetchDashboardStats();
   }, [currentUserId, baseUrl, initialPosts]);
 
-  // Now safe to early return after all hooks
+  // Early return after hooks
   if (status === 'loading') {
     return <div className="flex items-center justify-center min-h-screen">Loading dashboard...</div>;
   }
@@ -806,27 +889,33 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
   const handleDeletePost = async (postId) => {
     if (postToDelete?._id === postId) {
       setSubmitting(true);
+      setError('');
+      setSuccessMessage('');
       try {
         const response = await fetch(`/api/posts/${postId}`, {
           method: 'DELETE',
+          headers: {
+            // Authorization header added by NextAuth.js
+          },
         });
-        if (response.ok) {
-          await fetchUserPosts();
-          console.log('Post deleted:', postId);
-        } else {
-          console.error('Failed to delete post');
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to delete post');
         }
-      } catch (error) {
-        console.error('Delete error:', error);
+
+        await fetchUserPosts();
+        setSuccessMessage('Post deleted successfully!');
+      } catch (err) {
+        setError(err.message || 'Error deleting post');
       } finally {
         setSubmitting(false);
+        setShowDeleteDialog(false);
+        setPostToDelete(null);
       }
-      setShowDeleteDialog(false);
-      setPostToDelete(null);
     }
   };
 
-  // Define fetchUserPosts as a separate function for reuse (e.g., after delete/create)
   async function fetchUserPosts() {
     setLoadingPosts(true);
     try {
@@ -838,7 +927,6 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
       });
 
       if (!res.ok) {
-        console.error('Posts fetch failed:', res.status, await res.text());
         throw new Error('Failed to fetch user posts');
       }
 
@@ -850,7 +938,7 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
 
       setUserPosts(formattedPosts.length > 0 ? formattedPosts : initialPosts);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      setError(error.message || 'Error fetching posts');
       setUserPosts(initialPosts);
     } finally {
       setLoadingPosts(false);
@@ -865,41 +953,39 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      setError('Please select an image file');
       return;
     }
-
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image size should be less than 5MB');
+      setError('Image size should be less than 5MB');
       return;
     }
 
     setUploadingImage(true);
-
+    setError('');
+    setSuccessMessage('');
     try {
-      // Create FormData for image upload
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`/api/upload`, {
+      const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
+        // Authorization header is handled by NextAuth.js
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setNewPost(prev => ({...prev, image: data.url}));
-        setImagePreview(data.url);
-        console.log('Uploaded:', data.public_id);
-      } else {
-        alert('Failed to upload image');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload image');
       }
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert('Error uploading image');
+
+      const data = await response.json();
+      setNewPost((prev) => ({ ...prev, image: data.url }));
+      setImagePreview(data.url);
+      setSuccessMessage('Image uploaded successfully!');
+    } catch (err) {
+      setError(err.message || 'Error uploading image');
     } finally {
       setUploadingImage(false);
     }
@@ -908,6 +994,8 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
   const handleCreatePost = async (e) => {
     e.preventDefault();
     setCreating(true);
+    setError('');
+    setSuccessMessage('');
     try {
       const response = await fetch(`/api/posts`, {
         method: 'POST',
@@ -915,16 +1003,18 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
         body: JSON.stringify({
           ...newPost,
           tags: newPost.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-          author: currentUserId,  // Use currentUserId
+          author: currentUserId,
           authorBio: newPost.authorBio || 'Content Creator'
         })
       });
 
-      console.log('Create response status:', response.status);
-      const responseData = await response.json();
-      console.log('Create response data:', responseData);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create post');
+      }
 
-      if (response.ok && responseData.post) {
+      const responseData = await response.json();
+      if (responseData.post) {
         setNewPost({
           title: '',
           content: '',
@@ -936,16 +1026,12 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
           image: ''
         });
         setImagePreview('');
-        await fetchUserPosts();  // Refresh posts
+        await fetchUserPosts();
         setActiveTab('posts');
-        alert('Post created successfully!');
-      } else {
-        console.error('Failed to create post:', responseData.error || 'Unknown error');
-        alert(`Failed to create post: ${responseData.error || 'Server error'}`);
+        setSuccessMessage('Post created successfully!');
       }
     } catch (error) {
-      console.error('Create error:', error);
-      alert('Error creating post');
+      setError(error.message || 'Error creating post');
     } finally {
       setCreating(false);
     }
@@ -1015,8 +1101,20 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
           </div>
         </div>
 
+        {/* Global Error/Success Messages */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+        {successMessage && (
+          <div className="mb-6 p-4 bg-emerald-500/20 border border-emerald-500/50 rounded-lg text-emerald-400 text-sm">
+            {successMessage}
+          </div>
+        )}
+
         {/* Tabs Content */}
-        {activeTab === 'overview' && <OverviewTab setActiveTab={setActiveTab} />}
+        {activeTab === 'overview' && <OverviewTab setActiveTab={setActiveTab} stats={stats} />}
         {activeTab === 'posts' && <PostsTab posts={filteredPosts} searchQuery={searchQuery} onSearchChange={setSearchQuery} onEdit={handleEditPost} onDelete={handleDeleteClick} loading={loadingPosts} />}
         {activeTab === 'create' && <CreateTab newPost={newPost} setNewPost={setNewPost} onCreate={handleCreatePost} creating={creating} imagePreview={imagePreview} setImagePreview={setImagePreview} onImageUpload={handleImageUpload} uploadingImage={uploadingImage} />}
         {activeTab === 'analytics' && <AnalyticsTab />}
@@ -1035,9 +1133,15 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
               <p className="text-slate-400 mb-2">Are you sure you want to delete this post?</p>
               <p className="text-white font-medium mb-4 p-3 bg-slate-800/50 rounded-lg">&quot;{postToDelete.title}&quot;</p>
               <p className="text-sm text-slate-500 mb-6">This action cannot be undone.</p>
+              {error && (
+                <p className="text-red-400 text-sm mb-4">{error}</p>
+              )}
+              {successMessage && (
+                <p className="text-emerald-400 text-sm mb-4">{successMessage}</p>
+              )}
               <div className="flex gap-3">
                 <button
-                  onClick={() => { setShowDeleteDialog(false); setPostToDelete(null); }}
+                  onClick={() => { setShowDeleteDialog(false); setPostToDelete(null); setError(''); setSuccessMessage(''); }}
                   className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium transition"
                   disabled={submitting}
                 >
@@ -1079,6 +1183,7 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
           </div>
         )}
 
+        {/* Discard Dialog */}
         {showDiscardDialog && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl">
@@ -1098,7 +1203,19 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
                 </button>
                 <button
                   onClick={() => {
-                    console.log('Draft discarded');
+                    setNewPost({
+                      title: '',
+                      content: '',
+                      excerpt: '',
+                      authorBio: '',
+                      readTime: '',
+                      category: 'Performance',
+                      tags: '',
+                      image: ''
+                    });
+                    setImagePreview('');
+                    setError('');
+                    setSuccessMessage('');
                     setShowDiscardDialog(false);
                     setActiveTab('overview');
                   }}
@@ -1116,7 +1233,7 @@ export default function Dashboard({ initialPosts = [], baseUrl }) {
 }
 
 // Sub-Tab Components
-function OverviewTab({ setActiveTab }) {
+function OverviewTab({ setActiveTab, stats }) {
   return (
     <div>
       <StatsGrid stats={stats} />
@@ -1225,17 +1342,6 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Author Bio</label>
-              <input
-                type="text"
-                value={newPost.authorBio}
-                onChange={(e) => setNewPost({...newPost, authorBio: e.target.value})}
-                placeholder="e.g., Senior Frontend Engineer at TechCorp"
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
-              />
-            </div>
-
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">Read Time</label>
               <input
@@ -1368,6 +1474,8 @@ function CreateTab({ newPost, setNewPost, onCreate, creating, imagePreview, setI
                   image: ''
                 });
                 setImagePreview('');
+                setError('');
+                setSuccessMessage('');
               }}
               className="px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition disabled:opacity-50"
             >
