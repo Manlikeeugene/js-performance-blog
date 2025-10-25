@@ -22,12 +22,12 @@ export default function Navbar({ showPostsLink = true, showFeatures = true, show
 
     if (session) {
       return (
-        <CustomLink href="/dashboard" className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 rounded-lg border border-slate-700 hover:bg-slate-700/50 transition">
+        <Link href="/dashboard" className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 rounded-lg border border-slate-700 hover:bg-slate-700/50 transition">
           <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center text-sm font-bold">
             {session.user?.name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
           <span className="hidden md:block text-sm font-medium">{session.user?.name || 'User'}</span>
-        </CustomLink>
+        </Link>
       );
     }
 

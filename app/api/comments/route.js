@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import { auth } from '@/auth';
 
 let getCommentModel, getUserModel, getStatsModel;
+let getPostModel;
 
 export async function GET(request) {
   try {
@@ -86,6 +87,25 @@ export async function POST(request) {
       { $inc: { comments: 1 }, $set: { updatedAt: new Date() } },
       { upsert: true }
     );
+
+    // Also increment author's user-level comments count (best-effort)
+    try {
+      if (!getPostModel) {
+        const postMod = await import('@/models/Post');
+        getPostModel = postMod.default;
+      }
+      const Post = getPostModel();
+      const post = await Post.findById(postId).lean();
+      if (post && post.author) {
+        await Stats.findOneAndUpdate(
+          { entityType: 'user', entityId: post.author },
+          { $inc: { comments: 1 }, $set: { updatedAt: new Date() } },
+          { upsert: true }
+        );
+      }
+    } catch (uErr) {
+      console.error('Error incrementing user comments stat:', uErr);
+    }
 
     // Populate for return
     await comment.populate('author', 'name image');
