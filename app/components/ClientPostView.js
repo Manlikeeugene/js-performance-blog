@@ -783,10 +783,10 @@ export default function ClientPostView({ id, dummyPost, dummyRelatedPosts, baseU
                 <MessageCircle className="w-4 h-4" />
                 <span>{comments.length}</span>
               </button>
-              <button onClick={handleSave} disabled className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg transition border border-slate-700 text-sm text-slate-300">
+              {/* <button onClick={handleSave} disabled className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg transition border border-slate-700 text-sm text-slate-300">
                 <Bookmark className="w-4 h-4" />
                 <span>Save</span>
-              </button>
+              </button> */}
               <button onClick={handleShare} disabled={actionLoading} className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg transition border border-slate-700 text-sm text-slate-300 disabled:opacity-50">
                 <Share2 className="w-4 h-4" />
                 <span>Share</span>
@@ -875,7 +875,7 @@ export default function ClientPostView({ id, dummyPost, dummyRelatedPosts, baseU
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg sm:text-xl font-bold mb-2">{post?.author?.name || 'Unknown Author'}</h3>
                   <p className="text-slate-400 mb-4 text-sm leading-relaxed">{post?.authorBio || 'Author bio not available'}</p>
-                  <button
+                  {/* <button
                     onClick={handleFollow}
                     disabled={actionLoading || !post?.author?.id || session?.user?.id === post.author.id}
                     className={`px-4 py-2 rounded-lg font-medium text-sm transition ${
@@ -885,7 +885,7 @@ export default function ClientPostView({ id, dummyPost, dummyRelatedPosts, baseU
                     } disabled:opacity-50`}
                   >
                     {isFollowing ? 'Following' : 'Follow'}
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>
