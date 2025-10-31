@@ -1,5 +1,3 @@
-// components/PostContent.js (simple component if you don't have it; renders HTML content safely)
-
 import React from 'react';
 
 export default function PostContent({ content }) {
