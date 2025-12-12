@@ -293,6 +293,67 @@ export async function DELETE(request, { params }) {
   }
 }
 
+
+// export async function DELETE(request, { params }) {
+//   const { id } = await params();  // Note: params() returns a Promise in some Next.js versions—unwrap it.
+
+//   try {
+//     const session = await auth();
+//     if (!session?.user) {
+//       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+//     }
+
+//     await connectDB();
+
+//     // Declare variables first
+//     let getPostModel;
+//     let getUserModel;
+//     let getStatsModel;
+
+//     if (!getPostModel) {
+//       const mod = await import('@/models/Post');
+//       getPostModel = mod.default;
+//     }
+//     if (!getUserModel) {
+//       const userMod = await import('@/models/User');
+//       getUserModel = userMod.default;
+//     }
+//     if (!getStatsModel) {
+//       const statsMod = await import('@/models/Stats');
+//       getStatsModel = statsMod.default;
+//     }
+//     const Post = getPostModel();
+//     const User = getUserModel();
+//     const Stats = getStatsModel();
+
+//     const post = await Post.findById(id);
+
+//     if (!post) {
+//       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+//     }
+
+//     if (post.author.toString() !== session.user.id) {
+//       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+//     }
+
+//     // Delete post stats
+//     await Stats.deleteOne({ entityType: 'post', entityId: id });
+
+//     // Update user stats (decrement posts)
+//     await Stats.findOneAndUpdate(
+//       { entityType: 'user', entityId: session.user.id },
+//       { $inc: { posts: -1 }, $set: { updatedAt: new Date() } }
+//     );
+
+//     await Post.findByIdAndDelete(id);
+
+//     return NextResponse.json({ message: 'Post deleted successfully' }, { status: 200 });
+//   } catch (error) {
+//     console.error('Error deleting post:', error);
+//     return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 });
+//   }
+// }
+
 export async function PUT(request, { params }) {
   const { id } = await params;
 
